@@ -19,6 +19,6 @@ Registro de la planificación temporal, metodología Scrum, seguimiento de Sprin
 
 ## 👥 Equipo de Trabajo
 *   **Agustin Morosi** (@agusking420) - Scrum Master
+*   **Lucas Rosales** (@LucasRosaless) - Programación General y Gestión de Requerimientos
 *   **Luca Porta** (@Luca0052) - Backend Developer
-*   **Maximo Zavala** (@MW3Atomic) - Fullstack Developer
 *   **Ulises Leguizamon** (@Ulisesle) - Frontend Designer
