@@ -8,19 +8,8 @@ El sistema sigue un patrón de **Arquitectura en Capas (Layered Architecture)** 
 *   **Capa de Presentación (Frontend):** Implementada con **HTML5, CSS3 y el motor de plantillas Mustache**. Se encarga de renderizar la interfaz de usuario de forma dinámica basada en los datos provistos por el backend.
 *   **Capa de Lógica de Negocio (Backend):** Desarrollada en **Java**. Contiene los controladores y servicios que gestionan las reglas académicas (validación de correlativas, cálculos de promedio, inscripciones).
 *   **Capa de Acceso a Datos (Persistencia):** Utiliza **SQLite** como motor de base de datos relacional, gestionando la persistencia de las entidades mediante una capa de DAO (Data Access Objects).
+<img width="764" height="634" alt="image" src="https://github.com/user-attachments/assets/69570b4d-25e5-4a31-a5ef-be8fa976800a" />
 
-    lowchart TD
-    A[Usuario] --> B[Frontend (HTML/CSS/Mustache)]
-    B -->|HTTP| C[Backend (Java)]
-    
-    C --> D[Modulo Usuarios]
-    C --> E[Modulo Academico]
-    C --> F[Modulo Evaluacion]
-    
-    D --> G[(SQLite DB)]
-    E --> G
-    F --> G
-    
 ### Diagrama de Componentes e Interacciones
 
 
