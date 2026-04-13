@@ -9,6 +9,18 @@ El sistema sigue un patrón de **Arquitectura en Capas (Layered Architecture)** 
 *   **Capa de Lógica de Negocio (Backend):** Desarrollada en **Java**. Contiene los controladores y servicios que gestionan las reglas académicas (validación de correlativas, cálculos de promedio, inscripciones).
 *   **Capa de Acceso a Datos (Persistencia):** Utiliza **SQLite** como motor de base de datos relacional, gestionando la persistencia de las entidades mediante una capa de DAO (Data Access Objects).
 
+flowchart TD
+    A[Usuario] --> B[Frontend (HTML/CSS/Mustache)]
+    B -->|HTTP| C[Backend (Java)]
+    
+    C --> D[Modulo Usuarios]
+    C --> E[Modulo Academico]
+    C --> F[Modulo Evaluacion]
+    
+    D --> G[(SQLite DB)]
+    E --> G
+    F --> G
+    
 ### Diagrama de Componentes e Interacciones
 
 
