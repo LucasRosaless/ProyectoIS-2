@@ -1,4 +1,4 @@
-# <img src="https://unpkg.com/boxicons@2.1.4/svg/regular/bx-graduation-cap.svg" width="24" height="24" style="vertical-align: middle;"> Sistema de Gestión Universitaria - Comisión Nro. 3
+# Sistema de Gestión Universitaria - Comisión Nro. 3
 
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white)
