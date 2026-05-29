@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{#plan}}Editar{{/plan}}{{^plan}}Nuevo{{/plan}} Plan de Estudio</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="/planes">← Volver a Planes de Estudio</a>
+        </nav>
+        <div class="glass-panel">
+            <h2>{{#plan}}Editar{{/plan}}{{^plan}}Nuevo{{/plan}} Plan de Estudio</h2>
+            {{#error}}<div class="alert alert-error">{{error}}</div>{{/error}}
+            <form action="{{#plan}}/planes/{{id_plan}}/edit{{/plan}}{{^plan}}/planes/new{{/plan}}" method="POST">
+                <div class="form-group">
+                    <label>ID Plan</label>
+                    <input type="number" name="id_plan" value="{{#plan}}{{id_plan}}{{/plan}}" {{#plan}}readonly{{/plan}} required>
+                </div>
+                <div class="form-group">
+                    <label>Resolución</label>
+                    <input type="text" name="resolucion" value="{{#plan}}{{resolucion}}{{/plan}}" required>
+                </div>
+                <div class="form-group">
+                    <label>Año de Vigencia</label>
+                    <input type="number" name="anio_vigencia" value="{{#plan}}{{anio_vigencia}}{{/plan}}" required>
+                </div>
+                <div class="form-group">
+                    <label>Estado (ej. 1 Activo, 0 Inactivo)</label>
+                    <input type="number" name="estado" value="{{#plan}}{{estado}}{{/plan}}" required>
+                </div>
+                <div class="form-group">
+                    <label>Carrera a la que pertenece</label>
+                    <select name="id_carrera" required>
+                        <option value="">Seleccione una carrera...</option>
+                        {{#carreras}}
+                        <option value="{{id_carrera}}" >{{nombre}} (ID: {{id_carrera}})</option>
+                        {{/carreras}}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

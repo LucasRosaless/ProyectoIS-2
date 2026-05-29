@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Alumnos</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="/dashboard">← Dashboard</a>
+            <a href="/profesores">Profesores</a>
+            <a href="/alumnos">Alumnos</a>
+            <a href="/carreras">Carreras</a>
+            <a href="/planes">Planes</a>
+            <a href="/materias">Materias</a>
+        </nav>
+
+        <div class="glass-panel">
+            <div class="header-flex">
+                <h2>Lista de Alumnos</h2>
+                <a href="/alumnos/new" class="btn btn-primary">+ Nuevo Alumno</a>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Legajo</th>
+                        <th>DNI</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Correo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#alumnos}}
+                    <tr>
+                        <td>{{legajo}}</td>
+                        <td>{{dni_persona}}</td>
+                        <td>{{nombre}}</td>
+                        <td>{{apellido}}</td>
+                        <td>{{correo}}</td>
+                        <td class="actions">
+                            <a href="/alumnos/{{legajo}}/edit" class="btn btn-secondary">Editar</a>
+                            <form action="/alumnos/{{legajo}}/delete" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que desea eliminar?');">Borrar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{/alumnos}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

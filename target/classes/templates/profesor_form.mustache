@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{#profesor}}Editar{{/profesor}}{{^profesor}}Nuevo{{/profesor}} Profesor</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="/profesores">← Volver a Profesores</a>
+        </nav>
+        <div class="glass-panel">
+            <h2>{{#profesor}}Editar{{/profesor}}{{^profesor}}Nuevo{{/profesor}} Profesor</h2>
+            {{#error}}<div class="alert alert-error">{{error}}</div>{{/error}}
+            <form action="{{#profesor}}/profesores/{{legajo_docente}}/edit{{/profesor}}{{^profesor}}/profesores/new{{/profesor}}" method="POST">
+                <div class="form-group">
+                    <label>Legajo Docente</label>
+                    <input type="text" name="legajo" value="{{#profesor}}{{legajo_docente}}{{/profesor}}" {{#profesor}}readonly{{/profesor}} required>
+                </div>
+                <div class="form-group">
+                    <label>DNI</label>
+                    <input type="text" name="dni" value="{{#persona}}{{dni}}{{/persona}}" {{#profesor}}readonly{{/profesor}} required>
+                </div>
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" name="nombre" value="{{#persona}}{{nombre}}{{/persona}}" required>
+                </div>
+                <div class="form-group">
+                    <label>Apellido</label>
+                    <input type="text" name="apellido" value="{{#persona}}{{apellido}}{{/persona}}" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="correo" value="{{#persona}}{{correo}}{{/persona}}" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

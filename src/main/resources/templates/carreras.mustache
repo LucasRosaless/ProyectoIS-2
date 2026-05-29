@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Carreras</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="/dashboard">← Dashboard</a>
+            <a href="/profesores">Profesores</a>
+            <a href="/alumnos">Alumnos</a>
+            <a href="/carreras">Carreras</a>
+            <a href="/planes">Planes</a>
+            <a href="/materias">Materias</a>
+        </nav>
+
+        <div class="glass-panel">
+            <div class="header-flex">
+                <h2>Lista de Carreras</h2>
+                <a href="/carreras/new" class="btn btn-primary">+ Nueva Carrera</a>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Carrera</th>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Duración (Años)</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#carreras}}
+                    <tr>
+                        <td>{{id_carrera}}</td>
+                        <td>{{codigo}}</td>
+                        <td>{{nombre}}</td>
+                        <td>{{duracion_anios}}</td>
+                        <td class="actions">
+                            <a href="/carreras/{{id_carrera}}/edit" class="btn btn-secondary">Editar</a>
+                            <form action="/carreras/{{id_carrera}}/delete" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que desea eliminar?');">Borrar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{/carreras}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{#carrera}}Editar{{/carrera}}{{^carrera}}Nueva{{/carrera}} Carrera</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="/carreras">← Volver a Carreras</a>
+        </nav>
+        <div class="glass-panel">
+            <h2>{{#carrera}}Editar{{/carrera}}{{^carrera}}Nueva{{/carrera}} Carrera</h2>
+            {{#error}}<div class="alert alert-error">{{error}}</div>{{/error}}
+            <form action="{{#carrera}}/carreras/{{id_carrera}}/edit{{/carrera}}{{^carrera}}/carreras/new{{/carrera}}" method="POST">
+                <div class="form-group">
+                    <label>ID Carrera</label>
+                    <input type="number" name="id_carrera" value="{{#carrera}}{{id_carrera}}{{/carrera}}" {{#carrera}}readonly{{/carrera}} required>
+                </div>
+                <div class="form-group">
+                    <label>Código</label>
+                    <input type="number" name="codigo" value="{{#carrera}}{{codigo}}{{/carrera}}" required>
+                </div>
+                <div class="form-group">
+                    <label>Nombre de la Carrera</label>
+                    <input type="text" name="nombre" value="{{#carrera}}{{nombre}}{{/carrera}}" required>
+                </div>
+                <div class="form-group">
+                    <label>Duración (Años)</label>
+                    <input type="number" name="duracion_anios" value="{{#carrera}}{{duracion_anios}}{{/carrera}}" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

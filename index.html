@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Universitaria - Comisión Nro. 3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --bg-color: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        h1 {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        header p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+        .repo-link {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        }
+        .repo-link:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        section {
+            margin-bottom: 50px;
+        }
+        h2 {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: var(--text-main);
+        }
+        .section-desc {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            border: 1px solid #e2e8f0;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        a.card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: var(--primary-color);
+        }
+        .card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.25rem;
+        }
+        .card p {
+            color: var(--text-muted);
+            margin-bottom: 0;
+            font-size: 0.95rem;
+        }
+        .team-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .team-member {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+        .team-member:hover {
+            transform: translateY(-3px);
+            border-color: #cbd5e1;
+        }
+        .member-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+        .member-role {
+            color: var(--primary-color);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .member-github {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-decoration: none;
+            margin-top: auto;
+            padding-top: 15px;
+        }
+        .member-github:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Gestión Universitaria</h1>
+            <p>Comisión Nro. 3</p>
+            <a href="https://github.com/LucasRosaless/ProyectoIS-2" target="_blank" class="repo-link">
+                🔗 Repositorio Oficial
+            </a>
+        </header>
+
+        <section>
+            <h2>Panel de Documentación</h2>
+            <p class="section-desc">Bienvenido al repositorio central del proyecto. A continuación se presentan los accesos directos a la documentación detallada del sistema:</p>
+            
+            <div class="grid-cards">
+                <a href="Requirements.md" class="card">
+                    <h3>📑 Análisis de Requerimientos</h3>
+                    <p>Documentación completa sobre el problema a resolver, los actores involucrados y el listado detallado de requerimientos funcionales y no funcionales.</p>
+                </a>
+                
+                <a href="design.md" class="card">
+                    <h3>🎨 Diseño del Sistema</h3>
+                    <p>Detalles técnicos sobre la arquitectura del software, esquemas de la base de datos SQLite, motores de plantillas Mustache y el diseño de la interfaz de usuario.</p>
+                </a>
+                
+                <a href="Auditoría.md" class="card">
+                    <h3>🛡️ Auditoría y Gestión</h3>
+                    <p>Registro de la planificación temporal, metodología Scrum, seguimiento de Sprints, cambios de alcance y bitácora de problemas técnicos encontrados.</p>
+                </a>
+            </div>
+        </section>
+
+        <section>
+            <h2>👥 Equipo de Trabajo</h2>
+            <ul class="team-list">
+                <li class="team-member">
+                    <span class="member-name">Agustin Morosi</span>
+                    <span class="member-role">Scrum Master</span>
+                    <a href="https://github.com/agusking420" target="_blank" class="member-github">@agusking420</a>
+                </li>
+                <li class="team-member">
+                    <span class="member-name">Lucas Rosales</span>
+                    <span class="member-role">Programación General y Gestión de Requerimientos</span>
+                    <a href="https://github.com/LucasRosaless" target="_blank" class="member-github">@LucasRosaless</a>
+                </li>
+                <li class="team-member">
+                    <span class="member-name">Luca Porta</span>
+                    <span class="member-role">Backend Developer</span>
+                    <a href="https://github.com/Luca0052" target="_blank" class="member-github">@Luca0052</a>
+                </li>
+                <li class="team-member">
+                    <span class="member-name">Ulises Leguizamon</span>
+                    <span class="member-role">Frontend Designer</span>
+                    <a href="https://github.com/Ulisesle" target="_blank" class="member-github">@Ulisesle</a>
+                </li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html>
