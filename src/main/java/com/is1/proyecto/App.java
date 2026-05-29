@@ -645,7 +645,7 @@ public class App {
             }
 
             // Busca la cuenta en la base de datos por el nombre de usuario.
-            User ac = User.findFirst("name = ?", username);
+            User ac = (User) User.findFirst("name = ?", username);
 
             // Si no se encuentra ninguna cuenta con ese nombre de usuario.
             if (ac == null) {
