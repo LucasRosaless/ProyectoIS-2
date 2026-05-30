@@ -127,4 +127,48 @@ class ModelTest {
         assertEquals("Matemática I", foundMat.get("nombre"));
         assertEquals(6666, foundMat.getInteger("id_plan"));
     }
+
+    @Test
+    void testProfesorCreation() {
+        // 1. Crear Persona base para el profesor
+        Persona p = new Persona();
+        p.set("dni", "22223333");
+        p.set("nombre", "Marcelo");
+        p.set("apellido", "Gomez");
+        p.set("correo", "marcelo@example.com");
+        p.insert();
+
+        // 2. Crear Profesor asociado
+        Profesor prof = new Profesor();
+        prof.set("legajo_docente", "DOC444");
+        prof.set("dni_persona", "22223333");
+        prof.insert();
+
+        // 3. Validar recuperación de datos
+        Profesor foundProf = Profesor.findFirst("legajo_docente = ?", "DOC444");
+        assertNotNull(foundProf, "El profesor debería estar en la base de datos");
+        assertEquals("22223333", foundProf.get("dni_persona"));
+    }
+
+    @Test
+    void testAdministradorCreation() {
+        // 1. Crear Persona base para el administrador
+        Persona p = new Persona();
+        p.set("dni", "44445555");
+        p.set("nombre", "Ana");
+        p.set("apellido", "Lopez");
+        p.set("correo", "ana@example.com");
+        p.insert();
+
+        // 2. Crear Administrador asociado
+        Administrador admin = new Administrador();
+        admin.set("dni_persona", "44445555");
+        admin.set("cargo_administrative", "Director");
+        admin.insert();
+
+        // 3. Validar recuperación de datos
+        Administrador foundAdmin = Administrador.findFirst("dni_persona = ?", "44445555");
+        assertNotNull(foundAdmin, "El administrador debería estar en la base de datos");
+        assertEquals("Director", foundAdmin.get("cargo_administrative"));
+    }
 }
