@@ -67,4 +67,64 @@ class ModelTest {
         assertNotNull(foundPlan, "El plan de estudio debería existir en la BD");
         assertEquals("Res 123/26", foundPlan.get("resolucion"));
     }
+
+    @Test
+    void testAlumnoCreation() {
+        // 1. Crear Persona base para el alumno
+        Persona p = new Persona();
+        p.set("dni", "87654321");
+        p.set("nombre", "Juan");
+        p.set("apellido", "Perez");
+        p.set("correo", "juan@example.com");
+        p.insert();
+
+        // 2. Crear Alumno asociado
+        Alumno alu = new Alumno();
+        alu.set("legajo", 55555);
+        alu.set("dni_persona", "87654321");
+        alu.set("tipo_alumno", "INGRESANTE");
+        alu.insert();
+
+        // 3. Validar recuperación de datos
+        Alumno foundAlu = Alumno.findFirst("legajo = ?", 55555);
+        assertNotNull(foundAlu, "El alumno debería estar en la base de datos");
+        assertEquals("87654321", foundAlu.get("dni_persona"));
+        assertEquals("INGRESANTE", foundAlu.get("tipo_alumno"));
+    }
+
+    @Test
+    void testMateriaPlanAssociation() {
+        // 1. Crear Carrera
+        Carrera c = new Carrera();
+        c.set("id_carrera", 7777);
+        c.set("codigo", 102);
+        c.set("nombre", "Licenciatura en Sistemas");
+        c.set("duracion_anios", 4);
+        c.insert();
+
+        // 2. Crear Plan de Estudio
+        PlanEstudio plan = new PlanEstudio();
+        plan.set("id_plan", 6666);
+        plan.set("resolucion", "Res 456/26");
+        plan.set("anio_vigencia", 2026);
+        plan.set("estado", 1);
+        plan.set("id_carrera", 7777);
+        plan.insert();
+
+        // 3. Crear Materia vinculada al Plan
+        Materia mat = new Materia();
+        mat.set("id_materia", 5555);
+        mat.set("codigo", "MAT101");
+        mat.set("nombre", "Matemática I");
+        mat.set("periodo", "CUATRIMESTRAL");
+        mat.set("id_plan", 6666);
+        mat.insert();
+
+        // 4. Validar integridad de Materia
+        Materia foundMat = Materia.findFirst("id_materia = ?", 5555);
+        assertNotNull(foundMat, "La materia debería estar en la base de datos");
+        assertEquals("MAT101", foundMat.get("codigo"));
+        assertEquals("Matemática I", foundMat.get("nombre"));
+        assertEquals(6666, foundMat.getInteger("id_plan"));
+    }
 }
