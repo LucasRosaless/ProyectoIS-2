@@ -146,6 +146,51 @@ public class App {
             return new ModelAndView(model, "dashboard.mustache");
         }, new MustacheTemplateEngine()); // Especifica el motor de plantillas para esta ruta.
 
+        get("/dashboard-admin", (req, res) -> {
+            Map<String, Object> model = new HashMap<>();
+            String currentUsername = req.session().attribute("currentUserUsername");
+            Boolean loggedIn = req.session().attribute("loggedIn");
+            String tipoUsuario = req.session().attribute("tipoUsuario");
+
+            if (currentUsername == null || loggedIn == null || !loggedIn || !"administrador".equals(tipoUsuario)) {
+                res.redirect("/?error=Acceso no autorizado.");
+                return null;
+            }
+
+            model.put("username", currentUsername);
+            return new ModelAndView(model, "admin_dashboard.mustache");
+        }, new MustacheTemplateEngine());
+
+        get("/dashboard-profesor", (req, res) -> {
+            Map<String, Object> model = new HashMap<>();
+            String currentUsername = req.session().attribute("currentUserUsername");
+            Boolean loggedIn = req.session().attribute("loggedIn");
+            String tipoUsuario = req.session().attribute("tipoUsuario");
+
+            if (currentUsername == null || loggedIn == null || !loggedIn || !"profesor".equals(tipoUsuario)) {
+                res.redirect("/?error=Acceso no autorizado.");
+                return null;
+            }
+
+            model.put("username", currentUsername);
+            return new ModelAndView(model, "profesor_dashboard.mustache");
+        }, new MustacheTemplateEngine());
+
+        get("/dashboard-alumno", (req, res) -> {
+            Map<String, Object> model = new HashMap<>();
+            String currentUsername = req.session().attribute("currentUserUsername");
+            Boolean loggedIn = req.session().attribute("loggedIn");
+            String tipoUsuario = req.session().attribute("tipoUsuario");
+
+            if (currentUsername == null || loggedIn == null || !loggedIn || "administrador".equals(tipoUsuario) || "profesor".equals(tipoUsuario)) {
+                res.redirect("/?error=Acceso no autorizado.");
+                return null;
+            }
+
+            model.put("username", currentUsername);
+            return new ModelAndView(model, "alumno_dashboard.mustache");
+        }, new MustacheTemplateEngine());
+
         // GET: Ruta para cerrar la sesión del usuario.
         get("/logout", (req, res) -> {
             // Invalida completamente la sesión del usuario.
@@ -195,9 +240,10 @@ public class App {
         post("/user/new", (req, res) -> {
             String name = req.queryParams("name");
             String password = req.queryParams("password");
+            String tipo_usuario = req.queryParams("tipo_usuario");
 
             // Validaciones básicas: campos no pueden ser nulos o vacíos.
-            if (name == null || name.isEmpty() || password == null || password.isEmpty()) {
+            if (name == null || name.isEmpty() || password == null || password.isEmpty() || tipo_usuario == null || tipo_usuario.isEmpty()) {
                 res.status(400); // Código de estado HTTP 400 (Bad Request).
                 // Redirige al formulario de creación con un mensaje de error.
                 res.redirect("/user/create?error=Nombre y contraseña son requeridos.");
@@ -212,6 +258,7 @@ public class App {
 
                 ac.set("name", name); // Asigna el nombre de usuario.
                 ac.set("password", hashedPassword); // Asigna la contraseña hasheada.
+                ac.set("tipo_usuario" , tipo_usuario);
                 ac.saveIt(); // Guarda el nuevo usuario en la tabla 'users'.
 
                 res.status(201); // Código de estado HTTP 201 (Created) para una creación exitosa.
@@ -675,9 +722,20 @@ public class App {
                 System.out.println("DEBUG: Login exitoso para la cuenta: " + username);
                 System.out.println("DEBUG: ID de Sesión: " + req.session().id());
 
-                model.put("username", username); // Añade el nombre de usuario al modelo para el dashboard.
-                // Renderiza la plantilla del dashboard tras un login exitoso.
-                return new ModelAndView(model, "dashboard.mustache");
+                String tipoUsuario = ac.getString("tipo_usuario");
+
+                req.session().attribute("tipoUsuario", tipoUsuario);
+
+                if ("administrador".equals(tipoUsuario)) {
+                    res.redirect("/dashboard-admin");
+                } else if ("profesor".equals(tipoUsuario)) {
+                    res.redirect("/dashboard-profesor");
+                } else {
+                    res.redirect("/dashboard-alumno");
+                }
+
+                return null;
+            
             } else {
                 // Contraseña incorrecta.
                 res.status(401); // Unauthorized.
