@@ -1,0 +1,15 @@
+# Maven build output
+target/
+dependency-reduced-pom.xml
+
+# IDE configurations
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# Log files and database locks
+*.log
+*.db-journal
