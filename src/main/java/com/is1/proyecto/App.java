@@ -1,17 +1,17 @@
 package com.is1.proyecto; // Define el paquete de la aplicación, debe coincidir con la estructura de carpetas.
 
 // Importaciones necesarias para la aplicación Spark
-import java.util.ArrayList; // Utilidad para serializar/deserializar objetos Java a/desde JSON.
-import java.util.HashMap; // Importa los métodos estáticos principales de Spark (get, post, before, after, etc.).
-import java.util.List; // Clase central de ActiveJDBC para gestionar la conexión a la base de datos.
-import java.util.Map; // Base model para ActiveJDBC.
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.javalite.activejdbc.Base; // Utilidad para hashear y verificar contraseñas de forma segura.
-import org.javalite.activejdbc.Model; // Representa un modelo de datos y el nombre de la vista a renderizar.
-import org.mindrot.jbcrypt.BCrypt; // Motor de plantillas Mustache para Spark.
+import org.javalite.activejdbc.Base;
+import org.javalite.activejdbc.Model;
+import org.mindrot.jbcrypt.BCrypt;
 
-import com.fasterxml.jackson.databind.ObjectMapper; // Para crear mapas de datos (modelos para las plantillas).
-import com.is1.proyecto.config.DBConfigSingleton; // Modelo para la tabla profesores.
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.is1.proyecto.config.DBConfigSingleton;
 import com.is1.proyecto.models.Alumno;
 import com.is1.proyecto.models.Carrera;
 import com.is1.proyecto.models.Materia;
@@ -20,9 +20,9 @@ import com.is1.proyecto.models.PlanEstudio;
 import com.is1.proyecto.models.Profesor;
 import com.is1.proyecto.models.User;
 
-import spark.ModelAndView; // Interfaz Map, utilizada para Map.of() o HashMap.
-import static spark.Spark.after; // Clase Singleton para la configuración de la base de datos.
-import static spark.Spark.before; // Modelo de ActiveJDBC que representa la tabla 'users'.
+import spark.ModelAndView;
+import static spark.Spark.after;
+import static spark.Spark.before;
 import static spark.Spark.get;
 import static spark.Spark.halt;
 import static spark.Spark.port;
@@ -60,9 +60,7 @@ public class App {
                 // Abre una conexión a la base de datos utilizando las credenciales del
                 // singleton.
                 dbConfig.openConnection();
-                System.out.println(req.url());
-
-            } catch (Exception e) {
+                dbConfig.openConnection();            } catch (Exception e) {
                 // Si ocurre un error al abrir la conexión, se registra y se detiene la
                 // solicitud
                 // con un código de estado 500 (Internal Server Error) y un mensaje JSON.
@@ -118,9 +116,7 @@ public class App {
             String tipoUsuario = req.session().attribute("tipoUsuario");
 
             // 1. Verificar si el usuario ha iniciado sesión.
-            if (currentUsername == null || loggedIn == null || !loggedIn) {
-                System.out.println("DEBUG: Acceso no autorizado a /dashboard. Redirigiendo a la pantalla de login.");
-                // Redirige al login principal con un mensaje de error.
+            if (currentUsername == null || loggedIn == null || !loggedIn) {                // Redirige al login principal con un mensaje de error.
                 res.redirect("/?error=Debes iniciar sesión para acceder a esta página.");
                 return null; // Importante retornar null después de una redirección.
             }
@@ -188,11 +184,7 @@ public class App {
             // inválida.
             // La cookie JSESSIONID en el navegador también será gestionada para
             // invalidarse.
-            req.session().invalidate();
-
-            System.out.println("DEBUG: Sesión cerrada. Redirigiendo a /login.");
-
-            // Redirige al usuario a la página de login con un mensaje de éxito.
+            req.session().invalidate();            // Redirige al usuario a la página de login con un mensaje de éxito.
             res.redirect("/");
 
             return null; // Importante retornar null después de una redirección.
@@ -251,6 +243,11 @@ public class App {
             return new ModelAndView(model, "profile.mustache");
         }, new MustacheTemplateEngine());
 
+        get("/login", (req, res) -> {
+            res.redirect("/");
+            return null;
+        });
+
         // GET: Muestra el formulario de inicio de sesión (login).
         // Nota: Esta ruta debería ser capaz de leer también mensajes de error/éxito de
         // los query params
@@ -269,13 +266,6 @@ public class App {
             return new ModelAndView(model, "login.mustache");
         }, new MustacheTemplateEngine()); // Especifica el motor de plantillas para esta ruta.
 
-        // GET: Ruta de alias para el formulario de creación de cuenta.
-        // En una aplicación real, probablemente querrías unificar con '/user/create'
-        // para evitar duplicidad.
-        get("/user/new", (req, res) -> {
-            return new ModelAndView(new HashMap<>(), "user_form.mustache"); // No pasa un modelo específico, solo el
-            // formulario.
-        }, new MustacheTemplateEngine()); // Especifica el motor de plantillas para esta ruta.
 
         // --- Rutas POST para manejar envíos de formularios y APIs ---
         // POST: Maneja el envío del formulario de creación de nueva cuenta.
@@ -321,6 +311,16 @@ public class App {
         });
 
         // --- INICIO ABM ---
+        before((req, res) -> {
+            String path = req.pathInfo();
+            if (path.startsWith("/profesores") || path.startsWith("/alumnos") || path.startsWith("/carreras") || path.startsWith("/planes") || path.startsWith("/materias") || path.startsWith("/catedras")) {
+                if (req.session().attribute("loggedIn") == null) {
+                    res.redirect("/");
+                    halt();
+                }
+            }
+        });
+        
         // ======================= PROFESORES =======================
         get("/profesores", (req, res) -> {
             Map<String, Object> model = new HashMap<>();
@@ -807,9 +807,6 @@ public class App {
                 req.session().attribute("loggedIn", true); // Establece una bandera para indicar que el usuario está
                 // logueado.
 
-                System.out.println("DEBUG: Login exitoso para la cuenta: " + username);
-                System.out.println("DEBUG: ID de Sesión: " + req.session().id());
-
                 String tipoUsuario = ac.getString("tipo_usuario");
 
                 req.session().attribute("tipoUsuario", tipoUsuario);
@@ -827,7 +824,6 @@ public class App {
             } else {
                 // Contraseña incorrecta.
                 res.status(401); // Unauthorized.
-                System.out.println("DEBUG: Intento de login fallido para: " + username);
                 model.put("errorMessage", "Usuario o contraseña incorrectos."); // Mensaje genérico por seguridad.
                 return new ModelAndView(model, "login.mustache"); // Renderiza la plantilla de login con error.
             }
@@ -874,6 +870,26 @@ public class App {
                 return objectMapper
                         .writeValueAsString(Map.of("error", "Error interno al registrar usuario: " + e.getMessage()));
             }
+        });
+
+        spark.Spark.notFound((req, res) -> {
+            res.type("text/html");
+            Map<String, Object> model = new HashMap<>();
+            model.put("errorCode", "404");
+            model.put("errorMessage", "Página no encontrada");
+            return new MustacheTemplateEngine().render(
+                new ModelAndView(model, "error.mustache")
+            );
+        });
+
+        spark.Spark.internalServerError((req, res) -> {
+            res.type("text/html");
+            Map<String, Object> model = new HashMap<>();
+            model.put("errorCode", "500");
+            model.put("errorMessage", "Error interno del servidor");
+            return new MustacheTemplateEngine().render(
+                new ModelAndView(model, "error.mustache")
+            );
         });
 
     } // Fin del método main

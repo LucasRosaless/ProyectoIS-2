@@ -49,11 +49,7 @@
       <artifactId>jbcrypt</artifactId>
       <version>0.4</version>
     </dependency>
-    <dependency>
-      <groupId>jakarta.persistence</groupId>
-      <artifactId>jakarta.persistence-api</artifactId>
-      <version>${jakarta.persistence.version}</version>
-    </dependency>
+
     <dependency>
       <groupId>org.javalite</groupId>
       <artifactId>activejdbc</artifactId>
