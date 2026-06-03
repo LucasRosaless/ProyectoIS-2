@@ -1,24 +1,56 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* 
+  Estilos Globales de la Aplicación - MiUni - Project
+  Diseño Premium Dark-Glass (Vidrio esmerilado en ambiente oscuro de alta gama)
+*/
+
+/* 
+  Importación de Fuentes de Google:
+  - Inter: Para textos descriptivos, etiquetas y celdas de datos por su legibilidad.
+  - Outfit: Para títulos destacados y encabezados por su forma geométrica elegante.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --bg-color: #0f172a;
+    /* Paleta de Colores de Alta Fidelidad */
+    --bg-color: #020617;
+    /* Slate 950 extremadamente profundo */
     --text-main: #f8fafc;
+    /* Slate 50 para máxima legibilidad de contraste */
     --text-muted: #94a3b8;
-    --primary: #3b82f6;
-    --primary-hover: #2563eb;
-    --danger: #ef4444;
-    --danger-hover: #dc2626;
-    --surface: rgba(30, 41, 59, 0.7);
-    --border: rgba(255, 255, 255, 0.1);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    /* Slate 400 para metadatos o etiquetas secundarias */
+
+    /* Colores del Sistema y Acentos */
+    --primary: #6366f1;
+    /* Indigo 500 como color de destaque corporativo */
+    --primary-glow: rgba(99, 102, 241, 0.35);
+    --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    --primary-gradient-hover: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+
+    --danger: #f43f5e;
+    /* Rose 500 para advertencias y borrados */
+    --danger-gradient: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%);
+    --danger-gradient-hover: linear-gradient(135deg, #be123c 0%, #e11d48 100%);
+
+    /* Superficies Glassmorphism */
+    --surface: rgba(15, 23, 42, 0.65);
+    /* Slate 900 semi-translúcido */
+    --border: rgba(255, 255, 255, 0.06);
+    /* Borde ultrafino casi invisible */
+    --border-hover: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
 }
 
+/* Reset y Box Model moderno */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+/* 
+  Cuerpo de la página con mesh gradient:
+  Gradientes radiales sutiles en las esquinas que simulan luces desenfocadas de neón de fondo.
+*/
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-color);
@@ -27,129 +59,196 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-image: 
-        radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-        radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), 
-        radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%);
+    background-image:
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(244, 63, 94, 0.08) 0px, transparent 50%);
     background-attachment: fixed;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
+/* Contenedor central principal */
 .container {
     width: 100%;
-    max-width: 1000px;
-    padding: 2rem;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+    max-width: 1100px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
 }
 
+/* 
+  Panel Glassmorphism:
+  Efecto de desenfoque de fondo y borde reflectante para crear profundidad sobre el mesh background.
+*/
 .glass-panel {
     background: var(--surface);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2rem;
+    border-radius: 20px;
+    padding: 2.5rem;
     box-shadow: var(--glass-shadow);
-    animation: fadeIn 0.4s ease-out;
+    animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Animación de entrada suave con elevación */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-h1, h2, h3 {
-    font-weight: 600;
+/* Encabezados estilizados con fuente Outfit */
+h1,
+h2,
+h3 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
     margin-bottom: 1rem;
     color: var(--text-main);
+    letter-spacing: -0.02em;
 }
 
+/* Cabecera del panel flexible */
 .header-flex {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
     border-bottom: 1px solid var(--border);
-    padding-bottom: 1rem;
+    padding-bottom: 1.25rem;
 }
 
+.header-flex h2 {
+    margin-bottom: 0;
+    font-size: 1.75rem;
+}
+
+/* Enlaces generales */
 a {
     color: var(--primary);
     text-decoration: none;
-    transition: color 0.2s;
+    transition: all 0.25s ease;
 }
 
 a:hover {
-    color: var(--primary-hover);
+    color: #818cf8;
+    /* Indigo 400 en hover */
 }
 
+.h-56 {
+    height: 16rem !important;
+}
+
+/* 
+  Botones del Sistema:
+  Botones premium con esquinas redondeadas suavizadas, gradientes ricos y sombras de luz difusas.
+*/
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.6rem 1.2rem;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: 8px;
+    padding: 0.625rem 1.35rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    border-radius: 12px;
     border: none;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
+    gap: 0.5rem;
 }
 
+/* Botón Principal (Primary): Gradiente Indigo */
 .btn-primary {
-    background: var(--primary);
+    background: var(--primary-gradient);
     color: white;
+    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.2);
 }
 
 .btn-primary:hover {
-    background: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    background: var(--primary-gradient-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.35);
 }
 
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Botón Peligro (Danger): Gradiente Rose/Rojo */
 .btn-danger {
-    background: var(--danger);
+    background: var(--danger-gradient);
     color: white;
+    box-shadow: 0 4px 14px 0 rgba(244, 63, 94, 0.2);
 }
 
 .btn-danger:hover {
-    background: var(--danger-hover);
+    background: var(--danger-gradient-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px 0 rgba(244, 63, 94, 0.35);
 }
 
+/* Botón Secundario (Secondary): Translúcido con borde */
 .btn-secondary {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.03);
     color: var(--text-main);
     border: 1px solid var(--border);
 }
 
 .btn-secondary:hover {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--border-hover);
+    transform: translateY(-1px);
 }
 
+/* 
+  Tablas de datos premium:
+  Manejo limpio de bordes y fondos alternos sutiles.
+*/
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 1rem;
+    font-size: 0.935rem;
 }
 
-th, td {
-    padding: 1rem;
+th,
+td {
+    padding: 1.125rem 1rem;
     text-align: left;
     border-bottom: 1px solid var(--border);
 }
 
 th {
     color: var(--text-muted);
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+}
+
+td {
+    color: var(--text-main);
+    font-weight: 400;
+}
+
+tr {
+    transition: background-color 0.2s ease;
 }
 
 tr:hover {
-    background: rgba(255,255,255,0.02);
+    background: rgba(255, 255, 255, 0.015);
 }
 
+/* Espaciados para formularios */
 .form-group {
     margin-bottom: 1.5rem;
 }
@@ -157,58 +256,140 @@ tr:hover {
 label {
     display: block;
     margin-bottom: 0.5rem;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
     color: var(--text-muted);
+    letter-spacing: 0.02em;
 }
 
-input, select {
+/* 
+  Entradas de Datos (Inputs / Selects):
+  Bordes limpios con desenfoque de foco de color para centrar la atención del usuario.
+*/
+input,
+select {
     width: 100%;
-    padding: 0.8rem;
-    background: rgba(0,0,0,0.2);
+    padding: 0.875rem 1rem;
+    background: rgba(15, 23, 42, 0.8);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 12px;
     color: var(--text-main);
     font-family: inherit;
-    transition: border-color 0.2s;
+    font-size: 0.95rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
     outline: none;
     border-color: var(--primary);
+    background: rgba(15, 23, 42, 0.95);
+    box-shadow: 0 0 0 4px var(--primary-glow);
 }
 
+/* Contenedor de acciones múltiples */
 .actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.625rem;
+    align-items: center;
 }
 
+/* 
+  Barra de navegación tipo Dock / Pestañas de control:
+  Panel suspendido que unifica la navegación entre tablas CRUD.
+*/
 .nav {
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
     margin-bottom: 2rem;
-    padding: 1rem;
+    padding: 0.875rem 1.5rem;
     background: var(--surface);
-    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 16px;
     border: 1px solid var(--border);
+    box-shadow: var(--glass-shadow);
+    align-items: center;
 }
 
 .nav a {
-    color: var(--text-main);
-    font-weight: 500;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.9rem;
+    position: relative;
+    padding: 0.25rem 0;
+}
+
+/* Micro-indicador de línea inferior al hacer hover en el nav */
+.nav a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--primary);
+    transition: width 0.25s ease;
 }
 
 .nav a:hover {
-    color: var(--primary);
+    color: var(--text-main);
 }
 
+.nav a:hover::after {
+    width: 100%;
+}
+
+/* Enlace especial de retroceso (dashboard) */
+.nav a[href*="dashboard"] {
+    color: var(--primary);
+    font-weight: 700;
+    margin-right: auto;
+    /* Empuja el resto de enlaces a la derecha */
+}
+
+.nav a[href*="dashboard"]::after {
+    display: none;
+}
+
+.nav a[href*="dashboard"]:hover {
+    transform: translateX(-3px);
+}
+
+/* 
+  Alertas e Informes:
+  Caja de notificaciones con bordes suaves de color de alerta correspondiente.
+*/
 .alert {
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
 .alert-error {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid var(--danger);
-    color: #fca5a5;
+    background: rgba(244, 63, 94, 0.1);
+    border: 1px solid rgba(244, 63, 94, 0.3);
+    color: #fda4af;
+    /* Rose 300 */
+}
+
+/* Barra de desplazamiento (Scrollbar) personalizada premium */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
 }

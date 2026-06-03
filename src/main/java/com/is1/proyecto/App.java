@@ -1,24 +1,25 @@
 package com.is1.proyecto; // Define el paquete de la aplicación, debe coincidir con la estructura de carpetas.
 
 // Importaciones necesarias para la aplicación Spark
-import java.util.HashMap; // Utilidad para serializar/deserializar objetos Java a/desde JSON.
-import java.util.Map; // Importa los métodos estáticos principales de Spark (get, post, before, after, etc.).
+import java.util.ArrayList; // Utilidad para serializar/deserializar objetos Java a/desde JSON.
+import java.util.HashMap; // Importa los métodos estáticos principales de Spark (get, post, before, after, etc.).
+import java.util.List; // Clase central de ActiveJDBC para gestionar la conexión a la base de datos.
+import java.util.Map; // Base model para ActiveJDBC.
 
-import org.javalite.activejdbc.Base; // Clase central de ActiveJDBC para gestionar la conexión a la base de datos.
-import org.javalite.activejdbc.Model; // Base model para ActiveJDBC.
-import org.mindrot.jbcrypt.BCrypt; // Utilidad para hashear y verificar contraseñas de forma segura.
+import org.javalite.activejdbc.Base; // Utilidad para hashear y verificar contraseñas de forma segura.
+import org.javalite.activejdbc.Model; // Representa un modelo de datos y el nombre de la vista a renderizar.
+import org.mindrot.jbcrypt.BCrypt; // Motor de plantillas Mustache para Spark.
 
-import com.fasterxml.jackson.databind.ObjectMapper; // Representa un modelo de datos y el nombre de la vista a renderizar.
-import com.is1.proyecto.config.DBConfigSingleton; // Motor de plantillas Mustache para Spark.
-import com.is1.proyecto.models.User; // Para crear mapas de datos (modelos para las plantillas).
-import com.is1.proyecto.models.Profesor; // Modelo para la tabla profesores.
-import com.is1.proyecto.models.Persona;
+import com.fasterxml.jackson.databind.ObjectMapper; // Para crear mapas de datos (modelos para las plantillas).
+import com.is1.proyecto.config.DBConfigSingleton; // Modelo para la tabla profesores.
 import com.is1.proyecto.models.Alumno;
 import com.is1.proyecto.models.Carrera;
-import com.is1.proyecto.models.PlanEstudio;
 import com.is1.proyecto.models.Materia;
-import java.util.List;
-import java.util.ArrayList;
+import com.is1.proyecto.models.Persona;
+import com.is1.proyecto.models.PlanEstudio;
+import com.is1.proyecto.models.Profesor;
+import com.is1.proyecto.models.User;
+
 import spark.ModelAndView; // Interfaz Map, utilizada para Map.of() o HashMap.
 import static spark.Spark.after; // Clase Singleton para la configuración de la base de datos.
 import static spark.Spark.before; // Modelo de ActiveJDBC que representa la tabla 'users'.
@@ -29,8 +30,8 @@ import static spark.Spark.post;
 import spark.template.mustache.MustacheTemplateEngine;
 
 /**
- * Clase principal de la aplicación Spark.
- * Configura las rutas, filtros y el inicio del servidor web.
+ * Clase principal de la aplicación Spark. Configura las rutas, filtros y el
+ * inicio del servidor web.
  */
 public class App {
 
@@ -40,12 +41,12 @@ public class App {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * Método principal que se ejecuta al iniciar la aplicación.
-     * Aquí se configuran todas las rutas y filtros de Spark.
+     * Método principal que se ejecuta al iniciar la aplicación. Aquí se
+     * configuran todas las rutas y filtros de Spark.
      */
     public static void main(String[] args) {
         port(4567); // Configura el puerto en el que la aplicación Spark escuchará las peticiones
-                    // (por defecto es 4567).
+        // (por defecto es 4567).
         spark.Spark.staticFiles.location("/public");
 
         // Obtener la instancia única del singleton de configuración de la base de
@@ -58,7 +59,7 @@ public class App {
             try {
                 // Abre una conexión a la base de datos utilizando las credenciales del
                 // singleton.
-                Base.open(dbConfig.getDriver(), dbConfig.getDbUrl(), dbConfig.getUser(), dbConfig.getPass());
+                dbConfig.openConnection();
                 System.out.println(req.url());
 
             } catch (Exception e) {
@@ -76,7 +77,7 @@ public class App {
         after((req, res) -> {
             try {
                 // Cierra la conexión a la base de datos para liberar recursos.
-                Base.close();
+                dbConfig.closeConnection();
             } catch (Exception e) {
                 // Si ocurre un error al cerrar la conexión, se registra.
                 System.err.println("Error al cerrar conexión con ActiveJDBC: " + e.getMessage());
@@ -84,7 +85,6 @@ public class App {
         });
 
         // --- Rutas GET para renderizar formularios y páginas HTML ---
-
         // GET: Muestra el formulario de creación de cuenta.
         // Soporta la visualización de mensajes de éxito o error pasados como query
         // parameters.
@@ -110,41 +110,31 @@ public class App {
         }, new MustacheTemplateEngine()); // Especifica el motor de plantillas para esta ruta.
 
         // GET: Ruta para mostrar el dashboard (panel de control) del usuario.
-        // Requiere que el usuario esté autenticado.
+        // Requiere que el usuario esté autenticado y redirige a su panel correspondiente según su rol.
         get("/dashboard", (req, res) -> {
-            Map<String, Object> model = new HashMap<>(); // Modelo para la plantilla del dashboard.
-
-            // Intenta obtener el nombre de usuario y la bandera de login de la sesión.
+            // Intenta obtener el nombre de usuario, la bandera de login y el tipo de usuario de la sesión.
             String currentUsername = req.session().attribute("currentUserUsername");
             Boolean loggedIn = req.session().attribute("loggedIn");
+            String tipoUsuario = req.session().attribute("tipoUsuario");
 
             // 1. Verificar si el usuario ha iniciado sesión.
-            // Si no hay un nombre de usuario en la sesión, la bandera es nula o falsa,
-            // significa que el usuario no está logueado o su sesión expiró.
             if (currentUsername == null || loggedIn == null || !loggedIn) {
-                System.out.println("DEBUG: Acceso no autorizado a /dashboard. Redirigiendo a /login.");
-                // Redirige al login con un mensaje de error.
-                res.redirect("/login?error=Debes iniciar sesión para acceder a esta página.");
+                System.out.println("DEBUG: Acceso no autorizado a /dashboard. Redirigiendo a la pantalla de login.");
+                // Redirige al login principal con un mensaje de error.
+                res.redirect("/?error=Debes iniciar sesión para acceder a esta página.");
                 return null; // Importante retornar null después de una redirección.
             }
 
-            // 2. Si el usuario está logueado, añade el nombre de usuario al modelo para la
-            // plantilla.
-            model.put("username", currentUsername);
-
-            // 3. Obtener y añadir mensajes de éxito o error de los query parameters.
-            String successMessage = req.queryParams("message");
-            if (successMessage != null && !successMessage.isEmpty()) {
-                model.put("successMessage", successMessage);
+            // 2. Redirección basada en el rol/tipo de usuario
+            if ("administrador".equals(tipoUsuario)) {
+                res.redirect("/dashboard-admin");
+            } else if ("profesor".equals(tipoUsuario)) {
+                res.redirect("/dashboard-profesor");
+            } else {
+                res.redirect("/dashboard-alumno");
             }
-            String errorMessage = req.queryParams("error");
-            if (errorMessage != null && !errorMessage.isEmpty()) {
-                model.put("errorMessage", errorMessage);
-            }
-
-            // 4. Renderiza la plantilla del dashboard con el nombre de usuario.
-            return new ModelAndView(model, "dashboard.mustache");
-        }, new MustacheTemplateEngine()); // Especifica el motor de plantillas para esta ruta.
+            return null;
+        });
 
         get("/dashboard-admin", (req, res) -> {
             Map<String, Object> model = new HashMap<>();
@@ -208,6 +198,59 @@ public class App {
             return null; // Importante retornar null después de una redirección.
         });
 
+        // GET: Ruta para mostrar el perfil del usuario logueado.
+        get("/profile", (req, res) -> {
+            Map<String, Object> model = new HashMap<>();
+            String currentUsername = req.session().attribute("currentUserUsername");
+            Boolean loggedIn = req.session().attribute("loggedIn");
+            String tipoUsuario = req.session().attribute("tipoUsuario");
+
+            // 1. Verificar si el usuario ha iniciado sesión.
+            if (currentUsername == null || loggedIn == null || !loggedIn) {
+                res.redirect("/?error=Debes iniciar sesión para acceder a esta página.");
+                return null;
+            }
+
+            model.put("username", currentUsername);
+            model.put("tipo_usuario", tipoUsuario);
+
+            // Determinar la ruta de retorno al dashboard y flags de rol para la visualización.
+            String backUrl = "/dashboard";
+            if ("administrador".equals(tipoUsuario)) {
+                backUrl = "/dashboard-admin";
+                model.put("isAdmin", true);
+            } else if ("profesor".equals(tipoUsuario)) {
+                backUrl = "/dashboard-profesor";
+                model.put("isProfesor", true);
+            } else {
+                backUrl = "/dashboard-alumno";
+                model.put("isAlumno", true);
+            }
+            model.put("backUrl", backUrl);
+
+            // Intentar buscar los datos de Persona asociados a este user_login
+            Persona p = (Persona) Persona.findFirst("user_login = ?", currentUsername);
+            if (p != null) {
+                model.put("persona", p.toMap());
+                
+                // Si es alumno o profesor, buscar legajo y tipo
+                if ("profesor".equals(tipoUsuario)) {
+                    Profesor prof = (Profesor) Profesor.findFirst("dni_persona = ?", p.get("dni"));
+                    if (prof != null) {
+                        model.put("legajo", prof.get("legajo_docente"));
+                    }
+                } else if ("alumno".equals(tipoUsuario)) {
+                    Alumno alu = (Alumno) Alumno.findFirst("dni_persona = ?", p.get("dni"));
+                    if (alu != null) {
+                        model.put("legajo", alu.get("legajo"));
+                        model.put("tipo_alumno", alu.get("tipo_alumno"));
+                    }
+                }
+            }
+
+            return new ModelAndView(model, "profile.mustache");
+        }, new MustacheTemplateEngine());
+
         // GET: Muestra el formulario de inicio de sesión (login).
         // Nota: Esta ruta debería ser capaz de leer también mensajes de error/éxito de
         // los query params
@@ -231,11 +274,10 @@ public class App {
         // para evitar duplicidad.
         get("/user/new", (req, res) -> {
             return new ModelAndView(new HashMap<>(), "user_form.mustache"); // No pasa un modelo específico, solo el
-                                                                            // formulario.
+            // formulario.
         }, new MustacheTemplateEngine()); // Especifica el motor de plantillas para esta ruta.
 
         // --- Rutas POST para manejar envíos de formularios y APIs ---
-
         // POST: Maneja el envío del formulario de creación de nueva cuenta.
         post("/user/new", (req, res) -> {
             String name = req.queryParams("name");
@@ -258,7 +300,7 @@ public class App {
 
                 ac.set("name", name); // Asigna el nombre de usuario.
                 ac.set("password", hashedPassword); // Asigna la contraseña hasheada.
-                ac.set("tipo_usuario" , tipo_usuario);
+                ac.set("tipo_usuario", tipo_usuario);
                 ac.saveIt(); // Guarda el nuevo usuario en la tabla 'users'.
 
                 res.status(201); // Código de estado HTTP 201 (Created) para una creación exitosa.
@@ -279,7 +321,6 @@ public class App {
         });
 
         // --- INICIO ABM ---
-
         // ======================= PROFESORES =======================
         get("/profesores", (req, res) -> {
             Map<String, Object> model = new HashMap<>();
@@ -307,19 +348,25 @@ public class App {
                 Base.openTransaction();
                 String dni = req.queryParams("dni");
                 Persona p = (Persona) Persona.findFirst("dni = ?", dni);
+                boolean isNewPersona = false;
                 if (p == null) {
                     p = new Persona();
                     p.set("dni", dni);
+                    isNewPersona = true;
                 }
                 p.set("nombre", req.queryParams("nombre"));
                 p.set("apellido", req.queryParams("apellido"));
                 p.set("correo", req.queryParams("correo"));
-                p.saveIt();
+                if (isNewPersona) {
+                    p.insert();
+                } else {
+                    p.saveIt();
+                }
 
                 Profesor prof = new Profesor();
                 prof.set("legajo_docente", req.queryParams("legajo"));
                 prof.set("dni_persona", dni);
-                prof.saveIt();
+                prof.insert();
                 Base.commitTransaction();
                 res.redirect("/profesores");
             } catch (Exception e) {
@@ -336,8 +383,9 @@ public class App {
             if (prof != null) {
                 model.put("profesor", prof.toMap());
                 Persona p = (Persona) Persona.findFirst("dni = ?", prof.get("dni_persona"));
-                if (p != null)
+                if (p != null) {
                     model.put("persona", p.toMap());
+                }
             }
             return new ModelAndView(model, "profesor_form.mustache");
         }, new MustacheTemplateEngine());
@@ -367,8 +415,9 @@ public class App {
         post("/profesores/:id/delete", (req, res) -> {
             try {
                 Profesor prof = (Profesor) Profesor.findFirst("legajo_docente = ?", req.params(":id"));
-                if (prof != null)
+                if (prof != null) {
                     prof.delete();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -403,20 +452,26 @@ public class App {
                 Base.openTransaction();
                 String dni = req.queryParams("dni");
                 Persona p = (Persona) Persona.findFirst("dni = ?", dni);
+                boolean isNewPersona = false;
                 if (p == null) {
                     p = new Persona();
                     p.set("dni", dni);
+                    isNewPersona = true;
                 }
                 p.set("nombre", req.queryParams("nombre"));
                 p.set("apellido", req.queryParams("apellido"));
                 p.set("correo", req.queryParams("correo"));
-                p.saveIt();
+                if (isNewPersona) {
+                    p.insert();
+                } else {
+                    p.saveIt();
+                }
 
                 Alumno alu = new Alumno();
                 alu.set("legajo", req.queryParams("legajo"));
                 alu.set("dni_persona", dni);
                 alu.set("tipo_alumno", req.queryParams("tipo_alumno"));
-                alu.saveIt();
+                alu.insert();
                 Base.commitTransaction();
                 res.redirect("/alumnos");
             } catch (Exception e) {
@@ -433,8 +488,9 @@ public class App {
             if (alu != null) {
                 model.put("alumno", alu.toMap());
                 Persona p = (Persona) Persona.findFirst("dni = ?", alu.get("dni_persona"));
-                if (p != null)
+                if (p != null) {
                     model.put("persona", p.toMap());
+                }
             }
             return new ModelAndView(model, "alumno_form.mustache");
         }, new MustacheTemplateEngine());
@@ -466,8 +522,9 @@ public class App {
         post("/alumnos/:id/delete", (req, res) -> {
             try {
                 Alumno alu = (Alumno) Alumno.findFirst("legajo = ?", req.params(":id"));
-                if (alu != null)
+                if (alu != null) {
                     alu.delete();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -478,7 +535,11 @@ public class App {
         // ======================= CARRERAS =======================
         get("/carreras", (req, res) -> {
             Map<String, Object> model = new HashMap<>();
-            model.put("carreras", Carrera.findAll());
+            List<Map<String, Object>> lista = new ArrayList<>();
+            for (Model c : Carrera.findAll()) {
+                lista.add(c.toMap());
+            }
+            model.put("carreras", lista);
             return new ModelAndView(model, "carreras.mustache");
         }, new MustacheTemplateEngine());
 
@@ -493,7 +554,7 @@ public class App {
                 c.set("codigo", req.queryParams("codigo"));
                 c.set("nombre", req.queryParams("nombre"));
                 c.set("duracion_anios", req.queryParams("duracion_anios"));
-                c.saveIt();
+                c.insert();
                 res.redirect("/carreras");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -505,8 +566,9 @@ public class App {
         get("/carreras/:id/edit", (req, res) -> {
             Map<String, Object> model = new HashMap<>();
             Carrera c = (Carrera) Carrera.findFirst("id_carrera = ?", req.params(":id"));
-            if (c != null)
+            if (c != null) {
                 model.put("carrera", c.toMap());
+            }
             return new ModelAndView(model, "carrera_form.mustache");
         }, new MustacheTemplateEngine());
 
@@ -529,8 +591,9 @@ public class App {
         post("/carreras/:id/delete", (req, res) -> {
             try {
                 Carrera c = (Carrera) Carrera.findFirst("id_carrera = ?", req.params(":id"));
-                if (c != null)
+                if (c != null) {
                     c.delete();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -541,13 +604,21 @@ public class App {
         // ======================= PLAN DE ESTUDIO =======================
         get("/planes", (req, res) -> {
             Map<String, Object> model = new HashMap<>();
-            model.put("planes", PlanEstudio.findAll());
+            List<Map<String, Object>> lista = new ArrayList<>();
+            for (Model p : PlanEstudio.findAll()) {
+                lista.add(p.toMap());
+            }
+            model.put("planes", lista);
             return new ModelAndView(model, "planes.mustache");
         }, new MustacheTemplateEngine());
 
         get("/planes/new", (req, res) -> {
             Map<String, Object> model = new HashMap<>();
-            model.put("carreras", Carrera.findAll());
+            List<Map<String, Object>> lista = new ArrayList<>();
+            for (Model c : Carrera.findAll()) {
+                lista.add(c.toMap());
+            }
+            model.put("carreras", lista);
             return new ModelAndView(model, "plan_form.mustache");
         }, new MustacheTemplateEngine());
 
@@ -559,7 +630,7 @@ public class App {
                 p.set("anio_vigencia", req.queryParams("anio_vigencia"));
                 p.set("estado", req.queryParams("estado"));
                 p.set("id_carrera", req.queryParams("id_carrera"));
-                p.saveIt();
+                p.insert();
                 res.redirect("/planes");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -573,7 +644,11 @@ public class App {
             PlanEstudio p = (PlanEstudio) PlanEstudio.findFirst("id_plan = ?", req.params(":id"));
             if (p != null)
                 model.put("plan", p.toMap());
-            model.put("carreras", Carrera.findAll());
+            List<Map<String, Object>> lista = new ArrayList<>();
+            for (Model c : Carrera.findAll()) {
+                lista.add(c.toMap());
+            }
+            model.put("carreras", lista);
             return new ModelAndView(model, "plan_form.mustache");
         }, new MustacheTemplateEngine());
 
@@ -597,8 +672,9 @@ public class App {
         post("/planes/:id/delete", (req, res) -> {
             try {
                 PlanEstudio p = (PlanEstudio) PlanEstudio.findFirst("id_plan = ?", req.params(":id"));
-                if (p != null)
+                if (p != null) {
                     p.delete();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -609,13 +685,21 @@ public class App {
         // ======================= MATERIAS =======================
         get("/materias", (req, res) -> {
             Map<String, Object> model = new HashMap<>();
-            model.put("materias", Materia.findAll());
+            List<Map<String, Object>> lista = new ArrayList<>();
+            for (Model m : Materia.findAll()) {
+                lista.add(m.toMap());
+            }
+            model.put("materias", lista);
             return new ModelAndView(model, "materias.mustache");
         }, new MustacheTemplateEngine());
 
         get("/materias/new", (req, res) -> {
             Map<String, Object> model = new HashMap<>();
-            model.put("planes", PlanEstudio.findAll());
+            List<Map<String, Object>> lista = new ArrayList<>();
+            for (Model p : PlanEstudio.findAll()) {
+                lista.add(p.toMap());
+            }
+            model.put("planes", lista);
             return new ModelAndView(model, "materia_form.mustache");
         }, new MustacheTemplateEngine());
 
@@ -627,7 +711,7 @@ public class App {
                 m.set("nombre", req.queryParams("nombre"));
                 m.set("periodo", req.queryParams("periodo"));
                 m.set("id_plan", req.queryParams("id_plan"));
-                m.saveIt();
+                m.insert();
                 res.redirect("/materias");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -641,7 +725,11 @@ public class App {
             Materia m = (Materia) Materia.findFirst("id_materia = ?", req.params(":id"));
             if (m != null)
                 model.put("materia", m.toMap());
-            model.put("planes", PlanEstudio.findAll());
+            List<Map<String, Object>> lista = new ArrayList<>();
+            for (Model p : PlanEstudio.findAll()) {
+                lista.add(p.toMap());
+            }
+            model.put("planes", lista);
             return new ModelAndView(model, "materia_form.mustache");
         }, new MustacheTemplateEngine());
 
@@ -665,8 +753,9 @@ public class App {
         post("/materias/:id/delete", (req, res) -> {
             try {
                 Materia m = (Materia) Materia.findFirst("id_materia = ?", req.params(":id"));
-                if (m != null)
+                if (m != null) {
                     m.delete();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -675,7 +764,6 @@ public class App {
         });
 
         // --- FIN ABM ---
-
         // POST: Maneja el envío del formulario de inicio de sesión.
         post("/login", (req, res) -> {
             Map<String, Object> model = new HashMap<>(); // Modelo para la plantilla de login o dashboard.
@@ -714,10 +802,10 @@ public class App {
 
                 // --- Gestión de Sesión ---
                 req.session(true).attribute("currentUserUsername", username); // Guarda el nombre de usuario en la
-                                                                              // sesión.
+                // sesión.
                 req.session().attribute("userId", ac.getId()); // Guarda el ID de la cuenta en la sesión (útil).
                 req.session().attribute("loggedIn", true); // Establece una bandera para indicar que el usuario está
-                                                           // logueado.
+                // logueado.
 
                 System.out.println("DEBUG: Login exitoso para la cuenta: " + username);
                 System.out.println("DEBUG: ID de Sesión: " + req.session().id());
@@ -735,7 +823,7 @@ public class App {
                 }
 
                 return null;
-            
+
             } else {
                 // Contraseña incorrecta.
                 res.status(401); // Unauthorized.

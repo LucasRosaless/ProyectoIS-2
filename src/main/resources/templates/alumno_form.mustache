@@ -3,16 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <title>{{#alumno}}Editar{{/alumno}}{{^alumno}}Nuevo{{/alumno}} Alumno</title>
+    
+    <!-- Hoja de estilos global -->
     <link rel="stylesheet" href="/styles.css">
+    
+    <!-- Iconos Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
     <div class="container">
+        <!-- Navegación con icono de flecha hacia atrás -->
         <nav class="nav">
-            <a href="/alumnos">← Volver a Alumnos</a>
+            <a href="/alumnos"><i class='bx bx-arrow-back'></i> Volver a Alumnos</a>
         </nav>
+        
+        <!-- Panel con estilo glassmorphism -->
         <div class="glass-panel">
-            <h2>{{#alumno}}Editar{{/alumno}}{{^alumno}}Nuevo{{/alumno}} Alumno</h2>
-            {{#error}}<div class="alert alert-error">{{error}}</div>{{/error}}
+            <h2><i class='bx bx-user'></i> {{#alumno}}Editar{{/alumno}}{{^alumno}}Nuevo{{/alumno}} Alumno</h2>
+            
+            {{#error}}
+            <div class="alert alert-error">
+                <i class='bx bx-error-circle' style="vertical-align: middle; margin-right: 0.25rem;"></i>
+                {{error}}
+            </div>
+            {{/error}}
+            
             <form action="{{#alumno}}/alumnos/{{legajo}}/edit{{/alumno}}{{^alumno}}/alumnos/new{{/alumno}}" method="POST">
                 <div class="form-group">
                     <label>Legajo</label>
@@ -41,7 +56,11 @@
                     <label>Correo Electrónico</label>
                     <input type="email" name="correo" value="{{#persona}}{{correo}}{{/persona}}" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Guardar</button>
+                
+                <!-- Botón de guardar con icono de disquete -->
+                <button type="submit" class="btn btn-primary">
+                    <i class='bx bx-save'></i> Guardar
+                </button>
             </form>
         </div>
     </div>

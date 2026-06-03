@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - MiUni - Project</title>
+    
+    <!-- Hoja de estilos global -->
+    <link rel="stylesheet" href="/styles.css">
+    
+    <!-- Iconos Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            {{#isAdmin}}
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.35);
+            --primary-gradient: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%);
+            --primary-gradient-hover: linear-gradient(135deg, #5b21b6 0%, #6d28d9 100%);
+            {{/isAdmin}}
+            {{#isProfesor}}
+            --primary: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.35);
+            --primary-gradient: linear-gradient(135deg, #047857 0%, #10b981 100%);
+            --primary-gradient-hover: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            {{/isProfesor}}
+            {{#isAlumno}}
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.35);
+            --primary-gradient: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+            --primary-gradient-hover: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+            {{/isAlumno}}
+        }
+        
+        body {
+            background-image: 
+                {{#isAdmin}}radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),{{/isAdmin}}
+                {{#isProfesor}}radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),{{/isProfesor}}
+                {{#isAlumno}}radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),{{/isAlumno}}
+                radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+        }
+
+        .profile-card {
+            text-align: center;
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+
+        .profile-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 0 25px var(--primary-glow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 35px var(--primary-glow);
+        }
+
+        .profile-avatar i {
+            font-size: 4.5rem;
+            color: var(--primary);
+        }
+
+        .profile-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .profile-role {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.45rem 1.25rem;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            text-align: left;
+            margin-bottom: 2rem;
+            border-top: 1px solid var(--border);
+            padding-top: 2rem;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.25s ease;
+        }
+
+        .info-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: var(--border-hover);
+        }
+
+        .info-label {
+            font-size: 0.725rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+            font-weight: 700;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .no-persona-alert {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 500px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navegación con icono de flecha hacia atrás -->
+        <nav class="nav">
+            <a href="{{backUrl}}"><i class='bx bx-arrow-back'></i> Volver al Dashboard</a>
+        </nav>
+        
+        <!-- Panel de Perfil con estilo glassmorphism -->
+        <div class="glass-panel profile-card">
+            
+            <!-- Avatar grande estético -->
+            <div class="profile-avatar">
+                <i class='bx bx-user'></i>
+            </div>
+            
+            <h2 class="profile-title">{{username}}</h2>
+            <div class="profile-role">
+                <i class='bx bx-shield-quarter'></i>
+                <span>{{tipo_usuario}}</span>
+            </div>
+            
+            {{#persona}}
+            <!-- Grilla de información personal -->
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Nombre completo</div>
+                    <div class="info-value">{{nombre}} {{apellido}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Documento (DNI)</div>
+                    <div class="info-value">{{dni}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Correo Electrónico</div>
+                    <div class="info-value">{{correo}}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Teléfono</div>
+                    <div class="info-value">{{#telefono}}{{telefono}}{{/telefono}}{{^telefono}}<em>No especificado</em>{{/telefono}}</div>
+                </div>
+                {{#legajo}}
+                <div class="info-item">
+                    <div class="info-label">Legajo</div>
+                    <div class="info-value">{{legajo}}</div>
+                </div>
+                {{/legajo}}
+                {{#tipo_alumno}}
+                <div class="info-item">
+                    <div class="info-label">Tipo de Alumno</div>
+                    <div class="info-value">{{tipo_alumno}}</div>
+                </div>
+                {{/tipo_alumno}}
+            </div>
+            {{/persona}}
+            
+            {{^persona}}
+            <div class="no-persona-alert">
+                <i class='bx bx-info-circle' style="font-size: 1.75rem; margin-bottom: 0.75rem; display: block; color: var(--primary);"></i>
+                No se encontraron datos personales vinculados a tu usuario. Contacta a la administración de la facultad para asociar tu legajo.
+            </div>
+            {{/persona}}
+            
+            <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; display: flex; justify-content: center;">
+                <a href="{{backUrl}}" class="btn btn-secondary">
+                    <i class='bx bx-chevron-left'></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

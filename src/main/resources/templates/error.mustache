@@ -3,58 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error</title>
+    <title>Error - MiUni - Project</title>
+    
+    <!-- Hoja de estilos global -->
+    <link rel="stylesheet" href="/styles.css">
+    
+    <!-- Iconos Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8d7da; /* Un rojo claro para indicar error */
-            color: #721c24; /* Texto más oscuro para contraste */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
         .error-container {
-            background-color: #f5c6cb;
-            border: 1px solid #dc3545; /* Borde rojo */
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
+            width: 100%;
             max-width: 500px;
-            width: 90%;
+            margin-top: 15vh;
+            text-align: center;
         }
-        .error-container h1 {
-            color: #dc3545; /* Rojo fuerte para el título */
-            margin-bottom: 20px;
+        
+        .error-icon {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 5.5rem;
+            height: 5.5rem;
+            background: rgba(244, 63, 94, 0.1);
+            border-radius: 50%;
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.25);
+            animation: pulseError 2s infinite;
         }
-        .error-container p {
-            font-size: 1.1em;
-            line-height: 1.6;
-        }
-        .error-container a {
-            color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 20px;
-            display: inline-block;
-        }
-        .error-container a:hover {
-            text-decoration: underline;
+        
+        @keyframes pulseError {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
     <div class="error-container">
-        <h1>¡Oops! Ha ocurrido un error.</h1>
-        {{#errorMessage}}
-            <p>{{errorMessage}}</p>
-        {{/errorMessage}}
-        {{^errorMessage}}
-            <p>Lo sentimos, algo salió mal. Por favor, inténtalo de nuevo más tarde.</p>
-        {{/errorMessage}}
-        <a href="/">Volver a la página principal</a>
+        <!-- Tarjeta de error glassmorphism -->
+        <div class="glass-panel" style="padding: 3rem 2rem;">
+            <div class="error-icon">
+                <i class='bx bx-error-alt'></i>
+            </div>
+            
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: var(--text-main); margin-bottom: 1rem;">
+                ¡Oops! Ha ocurrido un error.
+            </h1>
+            
+            <div style="margin-bottom: 2rem;">
+                {{#errorMessage}}
+                    <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.6;">{{errorMessage}}</p>
+                {{/errorMessage}}
+                {{^errorMessage}}
+                    <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.6;">
+                        Lo sentimos, algo salió mal en la solicitud. Por favor, vuelve a intentarlo.
+                    </p>
+                {{/errorMessage}}
+            </div>
+            
+            <a href="/" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i class='bx bx-home-alt'></i> Volver a la página principal
+            </a>
+        </div>
     </div>
 </body>
 </html>

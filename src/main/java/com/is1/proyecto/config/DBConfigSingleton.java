@@ -32,11 +32,15 @@ public final class DBConfigSingleton {
     // Métodos para abrir y cerrar la conexión
     public void openConnection() {
         // Utiliza los valores de las propiedades de la clase para abrir la conexión
-        Base.open(this.driver, this.dbUrl, this.user, this.pass);
+        if (!Base.hasConnection()) {
+            Base.open(this.driver, this.dbUrl, this.user, this.pass);
+        }
     }
 
     public void closeConnection() {
-        Base.close();
+        if (Base.hasConnection()) {
+            Base.close();
+        }
     }
 
     // Getters existentes
@@ -56,4 +60,3 @@ public final class DBConfigSingleton {
         return driver;
     }
 }
-

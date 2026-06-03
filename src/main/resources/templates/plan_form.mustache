@@ -3,16 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <title>{{#plan}}Editar{{/plan}}{{^plan}}Nuevo{{/plan}} Plan de Estudio</title>
+    
+    <!-- Hoja de estilos global -->
     <link rel="stylesheet" href="/styles.css">
+    
+    <!-- Iconos Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
     <div class="container">
+        <!-- Navegación con icono de flecha hacia atrás -->
         <nav class="nav">
-            <a href="/planes">← Volver a Planes de Estudio</a>
+            <a href="/planes"><i class='bx bx-arrow-back'></i> Volver a Planes de Estudio</a>
         </nav>
+        
+        <!-- Panel con estilo glassmorphism -->
         <div class="glass-panel">
-            <h2>{{#plan}}Editar{{/plan}}{{^plan}}Nuevo{{/plan}} Plan de Estudio</h2>
-            {{#error}}<div class="alert alert-error">{{error}}</div>{{/error}}
+            <h2><i class='bx bx-book'></i> {{#plan}}Editar{{/plan}}{{^plan}}Nuevo{{/plan}} Plan de Estudio</h2>
+            
+            {{#error}}
+            <div class="alert alert-error">
+                <i class='bx bx-error-circle' style="vertical-align: middle; margin-right: 0.25rem;"></i>
+                {{error}}
+            </div>
+            {{/error}}
+            
             <form action="{{#plan}}/planes/{{id_plan}}/edit{{/plan}}{{^plan}}/planes/new{{/plan}}" method="POST">
                 <div class="form-group">
                     <label>ID Plan</label>
@@ -39,7 +54,11 @@
                         {{/carreras}}
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Guardar</button>
+                
+                <!-- Botón de guardar con icono de disquete -->
+                <button type="submit" class="btn btn-primary">
+                    <i class='bx bx-save'></i> Guardar
+                </button>
             </form>
         </div>
     </div>
