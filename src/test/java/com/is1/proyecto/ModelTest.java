@@ -171,4 +171,77 @@ class ModelTest {
         assertNotNull(foundAdmin, "El administrador debería estar en la base de datos");
         assertEquals("Director", foundAdmin.get("cargo_administrative"));
     }
+
+    @Test
+    void testAlumnoPlanAndInscripcion() {
+        // 1. Crear Carrera
+        Carrera c = new Carrera();
+        c.set("id_carrera", 3333);
+        c.set("codigo", 303);
+        c.set("nombre", "Bioinformática");
+        c.set("duracion_anios", 5);
+        c.insert();
+
+        // 2. Crear Plan de Estudio
+        PlanEstudio plan = new PlanEstudio();
+        plan.set("id_plan", 4444);
+        plan.set("resolucion", "Res 789/26");
+        plan.set("anio_vigencia", 2026);
+        plan.set("estado", 1);
+        plan.set("id_carrera", 3333);
+        plan.insert();
+
+        // 3. Crear Persona y Alumno con plan
+        Persona p = new Persona();
+        p.set("dni", "99998888");
+        p.set("nombre", "Sofia");
+        p.set("apellido", "Ramirez");
+        p.set("correo", "sofia@example.com");
+        p.insert();
+
+        Alumno alu = new Alumno();
+        alu.set("legajo", 77777);
+        alu.set("dni_persona", "99998888");
+        alu.set("tipo_alumno", "AVANZADO");
+        alu.setIdPlan(4444);
+        alu.insert();
+
+        // Verificar el plan del alumno
+        Alumno foundAlu = Alumno.findFirst("legajo = ?", 77777);
+        assertNotNull(foundAlu);
+        assertEquals(4444, foundAlu.getIdPlan());
+
+        // 4. Crear Materia
+        Materia mat = new Materia();
+        mat.set("id_materia", 2222);
+        mat.set("codigo", "BIO101");
+        mat.set("nombre", "Introducción a la Bioinformática");
+        mat.set("periodo", "ANUAL");
+        mat.set("id_plan", 4444);
+        mat.insert();
+
+        // 5. Crear Cátedra
+        Catedra cat = new Catedra();
+        cat.set("id_catedra", 1111);
+        cat.set("anio", 2026);
+        cat.set("comision", 1);
+        cat.set("id_materia", 2222);
+        cat.insert();
+
+        // 6. Crear Inscripción
+        Inscripcion insc = new Inscripcion();
+        insc.set("id_inscripcion", 5555);
+        insc.set("fecha_inscripcion", (int) (System.currentTimeMillis() / 1000));
+        insc.set("estado_inscripcion", "EN_CURSADA");
+        insc.set("legajo_alumno", 77777);
+        insc.set("id_catedra", 1111);
+        insc.insert();
+
+        // Verificar Inscripción
+        Inscripcion foundInsc = Inscripcion.findFirst("id_inscripcion = ?", 5555);
+        assertNotNull(foundInsc);
+        assertEquals("EN_CURSADA", foundInsc.getEstadoInscripcion());
+        assertEquals(77777, foundInsc.getLegajoAlumno());
+        assertEquals(1111, foundInsc.getIdCatedra());
+    }
 }

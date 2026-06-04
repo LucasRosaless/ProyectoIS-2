@@ -62,7 +62,7 @@ public class App {
                 // Abre una conexión a la base de datos utilizando las credenciales del
                 // singleton.
                 dbConfig.openConnection();
-                dbConfig.openConnection();            } catch (Exception e) {
+            } catch (Exception e) {
                 // Si ocurre un error al abrir la conexión, se registra y se detiene la
                 // solicitud
                 // con un código de estado 500 (Internal Server Error) y un mensaje JSON.
