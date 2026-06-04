@@ -61,7 +61,8 @@ CREATE TABLE Persona (
 CREATE TABLE Alumno (
     legajo INT PRIMARY KEY,
     dni_persona VARCHAR(20) REFERENCES Persona(dni),
-    tipo_alumno VARCHAR(20) REFERENCES TipoAlumno(tipo)
+    tipo_alumno VARCHAR(20) REFERENCES TipoAlumno(tipo),
+    id_plan INT REFERENCES Plan_estudio(id_plan)
 );
 
 CREATE TABLE Profesor (

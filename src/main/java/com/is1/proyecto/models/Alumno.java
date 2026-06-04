@@ -31,4 +31,12 @@ public class Alumno extends Model {
     public void setTipoAlumno(String tipoAlumno) {
         set("tipo_alumno", tipoAlumno);
     }
+
+    public Integer getIdPlan() {
+        return getInteger("id_plan");
+    }
+
+    public void setIdPlan(int idPlan) {
+        set("id_plan", idPlan);
+    }
 }

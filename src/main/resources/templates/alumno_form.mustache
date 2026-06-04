@@ -56,6 +56,15 @@
                     <label>Correo Electrónico</label>
                     <input type="email" name="correo" value="{{#persona}}{{correo}}{{/persona}}" required>
                 </div>
+                <div class="form-group">
+                    <label>Plan de Estudio</label>
+                    <select name="id_plan" required>
+                        <option value="">-- Seleccione un plan --</option>
+                        {{#planes}}
+                        <option value="{{id_plan}}" {{#selected}}selected{{/selected}}>{{resolucion}} (Carrera: {{nombre_carrera}})</option>
+                        {{/planes}}
+                    </select>
+                </div>
                 
                 <!-- Botón de guardar con icono de disquete -->
                 <button type="submit" class="btn btn-primary">

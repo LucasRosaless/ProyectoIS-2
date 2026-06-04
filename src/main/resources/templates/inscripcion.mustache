@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscripción a Materias - MiUni - Project</title>
+    
+    <!-- Hoja de estilos global -->
+    <link rel="stylesheet" href="/styles.css">
+    
+    <!-- Iconos Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        /* Sobrescribimos variables locales de color para el perfil de Alumnos (Azul) */
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-glow: rgba(59, 130, 246, 0.35);
+            --primary-gradient: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            --primary-gradient-hover: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+        }
+        
+        body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+        }
+
+        /* Barra de búsqueda */
+        .search-bar {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.25rem;
+        }
+
+        /* Info banner del plan */
+        .plan-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 14px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .plan-info i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .plan-info-text {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .plan-info-text strong {
+            color: var(--text-main);
+        }
+
+        /* Tarjetas de materia */
+        .materia-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .materia-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .materia-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+            gap: 1rem;
+        }
+
+        .materia-titulo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .materia-codigo {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 0.2rem;
+        }
+
+        .materia-periodo {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        /* Estado badges */
+        .estado-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .estado-disponible {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+        .estado-inscripto {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+
+        .estado-aprobada {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .estado-correlativas {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fcd34d;
+        }
+
+        /* Cátedra selector */
+        .catedra-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .catedra-section select {
+            max-width: 280px;
+            padding: 0.6rem 0.875rem;
+            font-size: 0.85rem;
+            border-radius: 10px;
+        }
+
+        .catedra-section .btn {
+            padding: 0.6rem 1.25rem;
+            font-size: 0.8rem;
+        }
+
+        .correlativas-info {
+            font-size: 0.8rem;
+            color: #fbbf24;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .correlativas-info i {
+            font-size: 1rem;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.6;
+        }
+
+        .empty-state p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* No cátedra warning */
+        .no-catedra-msg {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.75rem;
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .materia-header {
+                flex-direction: column;
+            }
+            .catedra-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .catedra-section select {
+                max-width: 100%;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navegación -->
+        <nav class="nav">
+            <a href="/dashboard-alumno" style="font-weight: 700;">← Panel Estudiante</a>
+            <a href="/profile">Tu Perfil</a>
+            <a href="/inscripcion" style="color: var(--text-main);">Inscripción</a>
+        </nav>
+
+        <!-- Panel principal -->
+        <div class="glass-panel">
+            <div class="header-flex">
+                <h2><i class='bx bx-edit'></i> Inscripción a Materias</h2>
+                <div class="user-badge">
+                    <i class='bx bx-user'></i>
+                    <span>{{#username}}{{username}}{{/username}}{{^username}}Alumno{{/username}}</span>
+                </div>
+            </div>
+
+            <!-- Alertas dinámicas -->
+            {{#successMessage}}
+            <div class="alert" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #a7f3d0;">
+                <i class='bx bx-check-circle' style="vertical-align: middle; margin-right: 0.25rem;"></i>
+                {{successMessage}}
+            </div>
+            {{/successMessage}}
+
+            {{#errorMessage}}
+            <div class="alert alert-error">
+                <i class='bx bx-error-circle' style="vertical-align: middle; margin-right: 0.25rem;"></i>
+                {{errorMessage}}
+            </div>
+            {{/errorMessage}}
+
+            <!-- Info del plan de estudio -->
+            {{#carrera_nombre}}
+            <div class="plan-info">
+                <i class='bx bx-book-bookmark'></i>
+                <div class="plan-info-text">
+                    <strong>{{carrera_nombre}}</strong> — Plan: {{plan_resolucion}} · Legajo: {{legajo}}
+                </div>
+            </div>
+            {{/carrera_nombre}}
+
+            {{#tiene_materias}}
+            <!-- Buscador interactivo -->
+            <div class="search-bar">
+                <i class='bx bx-search'></i>
+                <input type="text" id="searchInput" placeholder="Buscar materia por nombre o código..." autocomplete="off">
+            </div>
+
+            <!-- Lista de materias -->
+            <div id="materiasContainer">
+                {{#materias}}
+                <div class="materia-card" data-nombre="{{nombre}}" data-codigo="{{codigo}}">
+                    <div class="materia-header">
+                        <div>
+                            <div class="materia-titulo">{{nombre}}</div>
+                            <div class="materia-codigo">Código: {{codigo}}</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span class="materia-periodo">{{periodo}}</span>
+                            {{#disponible}}
+                            <span class="estado-badge estado-disponible"><i class='bx bx-check'></i> Disponible</span>
+                            {{/disponible}}
+                            {{#ya_inscripto}}
+                            <span class="estado-badge estado-inscripto"><i class='bx bx-loader-alt'></i> {{estado}}</span>
+                            {{/ya_inscripto}}
+                            {{#es_aprobada}}
+                            <span class="estado-badge estado-aprobada"><i class='bx bx-medal'></i> Aprobada</span>
+                            {{/es_aprobada}}
+                            {{#faltan_correlativas}}
+                            <span class="estado-badge estado-correlativas"><i class='bx bx-lock-alt'></i> Bloqueada</span>
+                            {{/faltan_correlativas}}
+                        </div>
+                    </div>
+
+                    {{#faltan_correlativas}}
+                    <div class="correlativas-info">
+                        <i class='bx bx-info-circle'></i>
+                        <span>Correlativas faltantes: {{correlativas_faltantes}}</span>
+                    </div>
+                    {{/faltan_correlativas}}
+
+                    {{#disponible}}
+                        {{#tiene_catedras}}
+                        <div class="catedra-section">
+                            <form action="/inscripcion" method="POST" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                                <label style="font-size: 0.8rem; margin-bottom: 0; color: var(--text-muted); white-space: nowrap;">Cátedra:</label>
+                                <select name="id_catedra" required>
+                                    {{#catedras}}
+                                    <option value="{{id_catedra}}">Comisión {{comision}} — Año {{anio}}</option>
+                                    {{/catedras}}
+                                </select>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class='bx bx-plus-circle'></i> Inscribirse
+                                </button>
+                            </form>
+                        </div>
+                        {{/tiene_catedras}}
+                        {{^tiene_catedras}}
+                        <div class="no-catedra-msg">
+                            <i class='bx bx-info-circle' style="vertical-align: middle;"></i>
+                            No hay cátedras habilitadas para esta materia actualmente.
+                        </div>
+                        {{/tiene_catedras}}
+                    {{/disponible}}
+
+                    {{#ya_inscripto}}
+                    <div class="catedra-section" style="border-top-color: rgba(59, 130, 246, 0.1);">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">
+                            <i class='bx bx-check-double' style="vertical-align: middle; color: #93c5fd;"></i>
+                            Ya estás inscripto en esta materia.
+                        </span>
+                    </div>
+                    {{/ya_inscripto}}
+
+                    {{#es_aprobada}}
+                    <div class="catedra-section" style="border-top-color: rgba(16, 185, 129, 0.1);">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">
+                            <i class='bx bx-trophy' style="vertical-align: middle; color: #34d399;"></i>
+                            ¡Materia aprobada! No es necesario volver a inscribirse.
+                        </span>
+                    </div>
+                    {{/es_aprobada}}
+                </div>
+                {{/materias}}
+            </div>
+            {{/tiene_materias}}
+
+            {{^tiene_materias}}
+            <div class="empty-state">
+                <i class='bx bx-book-open'></i>
+                <p>No se encontraron materias disponibles para tu plan de estudio.<br>
+                Contacta a la administración si crees que esto es un error.</p>
+            </div>
+            {{/tiene_materias}}
+
+            <!-- Botón de volver -->
+            <div style="text-align: center; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <a href="/dashboard-alumno" class="btn btn-secondary">
+                    <i class='bx bx-chevron-left'></i> Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para búsqueda interactiva en tiempo real -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    const cards = document.querySelectorAll('.materia-card');
+                    
+                    cards.forEach(function(card) {
+                        const nombre = (card.getAttribute('data-nombre') || '').toLowerCase();
+                        const codigo = (card.getAttribute('data-codigo') || '').toLowerCase();
+                        
+                        if (nombre.includes(query) || codigo.includes(query)) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

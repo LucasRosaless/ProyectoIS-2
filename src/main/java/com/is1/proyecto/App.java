@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.is1.proyecto.config.DBConfigSingleton;
 import com.is1.proyecto.models.Alumno;
 import com.is1.proyecto.models.Carrera;
+import com.is1.proyecto.models.Catedra;
+import com.is1.proyecto.models.Inscripcion;
 import com.is1.proyecto.models.Materia;
 import com.is1.proyecto.models.Persona;
 import com.is1.proyecto.models.PlanEstudio;
@@ -313,7 +315,7 @@ public class App {
         // --- INICIO ABM ---
         before((req, res) -> {
             String path = req.pathInfo();
-            if (path.startsWith("/profesores") || path.startsWith("/alumnos") || path.startsWith("/carreras") || path.startsWith("/planes") || path.startsWith("/materias") || path.startsWith("/catedras")) {
+            if (path.startsWith("/profesores") || path.startsWith("/alumnos") || path.startsWith("/carreras") || path.startsWith("/planes") || path.startsWith("/materias") || path.startsWith("/catedras") || path.startsWith("/inscripcion")) {
                 if (req.session().attribute("loggedIn") == null) {
                     res.redirect("/");
                     halt();
@@ -444,7 +446,17 @@ public class App {
         }, new MustacheTemplateEngine());
 
         get("/alumnos/new", (req, res) -> {
-            return new ModelAndView(new HashMap<>(), "alumno_form.mustache");
+            Map<String, Object> model = new HashMap<>();
+            // Cargar planes de estudio con nombre de carrera para el selector
+            List<Map<String, Object>> planesLista = new ArrayList<>();
+            for (Model plan : PlanEstudio.findAll()) {
+                Map<String, Object> planMap = new HashMap<>(plan.toMap());
+                Carrera carr = (Carrera) Carrera.findFirst("id_carrera = ?", plan.get("id_carrera"));
+                planMap.put("nombre_carrera", carr != null ? carr.get("nombre") : "Sin carrera");
+                planesLista.add(planMap);
+            }
+            model.put("planes", planesLista);
+            return new ModelAndView(model, "alumno_form.mustache");
         }, new MustacheTemplateEngine());
 
         post("/alumnos/new", (req, res) -> {
@@ -471,6 +483,10 @@ public class App {
                 alu.set("legajo", req.queryParams("legajo"));
                 alu.set("dni_persona", dni);
                 alu.set("tipo_alumno", req.queryParams("tipo_alumno"));
+                String idPlanParam = req.queryParams("id_plan");
+                if (idPlanParam != null && !idPlanParam.isEmpty()) {
+                    alu.set("id_plan", Integer.parseInt(idPlanParam));
+                }
                 alu.insert();
                 Base.commitTransaction();
                 res.redirect("/alumnos");
@@ -492,6 +508,18 @@ public class App {
                     model.put("persona", p.toMap());
                 }
             }
+            // Cargar planes de estudio con nombre de carrera y marcar el seleccionado
+            List<Map<String, Object>> planesLista = new ArrayList<>();
+            for (Model plan : PlanEstudio.findAll()) {
+                Map<String, Object> planMap = new HashMap<>(plan.toMap());
+                Carrera carr = (Carrera) Carrera.findFirst("id_carrera = ?", plan.get("id_carrera"));
+                planMap.put("nombre_carrera", carr != null ? carr.get("nombre") : "Sin carrera");
+                if (alu != null && plan.get("id_plan") != null && plan.get("id_plan").equals(alu.get("id_plan"))) {
+                    planMap.put("selected", true);
+                }
+                planesLista.add(planMap);
+            }
+            model.put("planes", planesLista);
             return new ModelAndView(model, "alumno_form.mustache");
         }, new MustacheTemplateEngine());
 
@@ -501,6 +529,10 @@ public class App {
                 Alumno alu = (Alumno) Alumno.findFirst("legajo = ?", req.params(":id"));
                 if (alu != null) {
                     alu.set("tipo_alumno", req.queryParams("tipo_alumno"));
+                    String idPlanParam = req.queryParams("id_plan");
+                    if (idPlanParam != null && !idPlanParam.isEmpty()) {
+                        alu.set("id_plan", Integer.parseInt(idPlanParam));
+                    }
                     alu.saveIt();
                     Persona p = (Persona) Persona.findFirst("dni = ?", alu.get("dni_persona"));
                     if (p != null) {
@@ -761,6 +793,275 @@ public class App {
             }
             res.redirect("/materias");
             return "";
+        });
+
+        // ======================= INSCRIPCION A MATERIAS (Issue 29) =======================
+        // GET: Muestra la página de inscripción con las materias del plan del alumno
+        get("/inscripcion", (req, res) -> {
+            Map<String, Object> model = new HashMap<>();
+            String currentUsername = req.session().attribute("currentUserUsername");
+            Boolean loggedIn = req.session().attribute("loggedIn");
+            String tipoUsuario = req.session().attribute("tipoUsuario");
+
+            // Validar sesión de alumno
+            if (currentUsername == null || loggedIn == null || !loggedIn) {
+                res.redirect("/?error=Debes iniciar sesión para acceder a esta página.");
+                return null;
+            }
+            if ("administrador".equals(tipoUsuario) || "profesor".equals(tipoUsuario)) {
+                res.redirect("/?error=Acceso no autorizado.");
+                return null;
+            }
+
+            model.put("username", currentUsername);
+
+            // Mensajes de éxito/error
+            String successMessage = req.queryParams("message");
+            if (successMessage != null && !successMessage.isEmpty()) {
+                model.put("successMessage", successMessage);
+            }
+            String errorMessage = req.queryParams("error");
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                model.put("errorMessage", errorMessage);
+            }
+
+            // Buscar Persona y Alumno asociados al usuario logueado
+            Persona persona = (Persona) Persona.findFirst("user_login = ?", currentUsername);
+            if (persona == null) {
+                model.put("errorMessage", "No se encontraron datos personales vinculados a tu usuario.");
+                return new ModelAndView(model, "inscripcion.mustache");
+            }
+
+            Alumno alumno = (Alumno) Alumno.findFirst("dni_persona = ?", persona.get("dni"));
+            if (alumno == null) {
+                model.put("errorMessage", "No se encontró un registro de alumno asociado a tu cuenta.");
+                return new ModelAndView(model, "inscripcion.mustache");
+            }
+
+            Integer idPlan = alumno.getInteger("id_plan");
+            if (idPlan == null) {
+                model.put("errorMessage", "No tienes un plan de estudio asignado. Contacta a la administración.");
+                return new ModelAndView(model, "inscripcion.mustache");
+            }
+
+            int legajoAlumno = alumno.getInteger("legajo");
+            model.put("legajo", legajoAlumno);
+
+            // Obtener info del plan y carrera para mostrar
+            PlanEstudio plan = (PlanEstudio) PlanEstudio.findFirst("id_plan = ?", idPlan);
+            if (plan != null) {
+                model.put("plan_resolucion", plan.get("resolucion"));
+                Carrera carrera = (Carrera) Carrera.findFirst("id_carrera = ?", plan.get("id_carrera"));
+                if (carrera != null) {
+                    model.put("carrera_nombre", carrera.get("nombre"));
+                }
+            }
+
+            // Obtener todas las materias del plan del alumno
+            List<Model> materias = Materia.find("id_plan = ?", idPlan);
+            List<Map<String, Object>> materiasList = new ArrayList<>();
+
+            for (Model materia : materias) {
+                Map<String, Object> materiaMap = new HashMap<>();
+                int idMateria = materia.getInteger("id_materia");
+                materiaMap.put("id_materia", idMateria);
+                materiaMap.put("codigo", materia.get("codigo"));
+                materiaMap.put("nombre", materia.get("nombre"));
+                materiaMap.put("periodo", materia.get("periodo"));
+
+                // Determinar estado del alumno en esta materia
+                // Buscar si el alumno tiene alguna inscripción activa (EN_CURSADA, REGULAR, APROBADA)
+                List<Model> catedrasDeMateria = Catedra.find("id_materia = ?", idMateria);
+                boolean yaInscripto = false;
+                boolean aprobada = false;
+                String estadoActual = null;
+
+                for (Model cat : catedrasDeMateria) {
+                    Inscripcion insc = (Inscripcion) Inscripcion.findFirst(
+                        "legajo_alumno = ? AND id_catedra = ? AND (estado_inscripcion = 'EN_CURSADA' OR estado_inscripcion = 'REGULAR' OR estado_inscripcion = 'APROBADA')",
+                        legajoAlumno, cat.getInteger("id_catedra"));
+                    if (insc != null) {
+                        estadoActual = insc.getString("estado_inscripcion");
+                        yaInscripto = true;
+                        if ("APROBADA".equals(estadoActual)) {
+                            aprobada = true;
+                        }
+                        break;
+                    }
+                }
+
+                // Verificar correlativas previas
+                boolean cumpleCorrelativas = true;
+                List<String> correlativasFaltantes = new ArrayList<>();
+                List<Map> correlativas = Base.findAll(
+                    "SELECT id_materia_correlativa FROM Correlativas_previas WHERE id_materia = ?", idMateria);
+                for (Map corr : correlativas) {
+                    int idCorrelativa = ((Number) corr.get("id_materia_correlativa")).intValue();
+                    // Verificar que el alumno tenga la correlativa APROBADA
+                    boolean correlativaAprobada = false;
+                    List<Model> catedrasCorr = Catedra.find("id_materia = ?", idCorrelativa);
+                    for (Model catCorr : catedrasCorr) {
+                        Inscripcion inscCorr = (Inscripcion) Inscripcion.findFirst(
+                            "legajo_alumno = ? AND id_catedra = ? AND estado_inscripcion = 'APROBADA'",
+                            legajoAlumno, catCorr.getInteger("id_catedra"));
+                        if (inscCorr != null) {
+                            correlativaAprobada = true;
+                            break;
+                        }
+                    }
+                    if (!correlativaAprobada) {
+                        cumpleCorrelativas = false;
+                        Materia materiaCorr = (Materia) Materia.findFirst("id_materia = ?", idCorrelativa);
+                        if (materiaCorr != null) {
+                            correlativasFaltantes.add(materiaCorr.getString("nombre"));
+                        }
+                    }
+                }
+
+                // Obtener cátedras disponibles para esta materia
+                List<Map<String, Object>> catedrasList = new ArrayList<>();
+                for (Model cat : catedrasDeMateria) {
+                    Map<String, Object> catMap = new HashMap<>();
+                    catMap.put("id_catedra", cat.getInteger("id_catedra"));
+                    catMap.put("anio", cat.get("anio"));
+                    catMap.put("comision", cat.get("comision"));
+                    catedrasList.add(catMap);
+                }
+                materiaMap.put("catedras", catedrasList);
+                materiaMap.put("tiene_catedras", !catedrasList.isEmpty());
+
+                // Definir el estado para la UI
+                if (aprobada) {
+                    materiaMap.put("estado", "APROBADA");
+                    materiaMap.put("es_aprobada", true);
+                } else if (yaInscripto) {
+                    materiaMap.put("estado", estadoActual);
+                    materiaMap.put("ya_inscripto", true);
+                } else if (!cumpleCorrelativas) {
+                    materiaMap.put("estado", "FALTAN_CORRELATIVAS");
+                    materiaMap.put("faltan_correlativas", true);
+                    materiaMap.put("correlativas_faltantes", String.join(", ", correlativasFaltantes));
+                } else {
+                    materiaMap.put("estado", "DISPONIBLE");
+                    materiaMap.put("disponible", true);
+                }
+
+                materiasList.add(materiaMap);
+            }
+
+            model.put("materias", materiasList);
+            model.put("tiene_materias", !materiasList.isEmpty());
+
+            return new ModelAndView(model, "inscripcion.mustache");
+        }, new MustacheTemplateEngine());
+
+        // POST: Procesa la inscripción de un alumno a una cátedra
+        post("/inscripcion", (req, res) -> {
+            String currentUsername = req.session().attribute("currentUserUsername");
+            Boolean loggedIn = req.session().attribute("loggedIn");
+            String tipoUsuario = req.session().attribute("tipoUsuario");
+
+            if (currentUsername == null || loggedIn == null || !loggedIn) {
+                res.redirect("/?error=Debes iniciar sesión.");
+                return "";
+            }
+            if ("administrador".equals(tipoUsuario) || "profesor".equals(tipoUsuario)) {
+                res.redirect("/?error=Acceso no autorizado.");
+                return "";
+            }
+
+            String idCatedraParam = req.queryParams("id_catedra");
+            if (idCatedraParam == null || idCatedraParam.isEmpty()) {
+                res.redirect("/inscripcion?error=Debe seleccionar una cátedra.");
+                return "";
+            }
+
+            try {
+                int idCatedra = Integer.parseInt(idCatedraParam);
+
+                // Obtener el alumno desde la sesión
+                Persona persona = (Persona) Persona.findFirst("user_login = ?", currentUsername);
+                if (persona == null) {
+                    res.redirect("/inscripcion?error=No se encontraron datos personales.");
+                    return "";
+                }
+                Alumno alumno = (Alumno) Alumno.findFirst("dni_persona = ?", persona.get("dni"));
+                if (alumno == null) {
+                    res.redirect("/inscripcion?error=No se encontró registro de alumno.");
+                    return "";
+                }
+
+                int legajoAlumno = alumno.getInteger("legajo");
+
+                // Obtener la cátedra y materia para validaciones
+                Catedra catedra = (Catedra) Catedra.findFirst("id_catedra = ?", idCatedra);
+                if (catedra == null) {
+                    res.redirect("/inscripcion?error=Cátedra no encontrada.");
+                    return "";
+                }
+                int idMateria = catedra.getInteger("id_materia");
+
+                // VALIDACIÓN 1: Verificar que no esté ya inscripto en esta materia
+                List<Model> catedrasDeMateria = Catedra.find("id_materia = ?", idMateria);
+                for (Model cat : catedrasDeMateria) {
+                    Inscripcion inscExistente = (Inscripcion) Inscripcion.findFirst(
+                        "legajo_alumno = ? AND id_catedra = ? AND (estado_inscripcion = 'EN_CURSADA' OR estado_inscripcion = 'REGULAR' OR estado_inscripcion = 'APROBADA')",
+                        legajoAlumno, cat.getInteger("id_catedra"));
+                    if (inscExistente != null) {
+                        res.redirect("/inscripcion?error=Ya estás inscripto en esta materia (estado: " + inscExistente.getString("estado_inscripcion") + ").");
+                        return "";
+                    }
+                }
+
+                // VALIDACIÓN 2: Verificar correlativas previas
+                List<Map> correlativas = Base.findAll(
+                    "SELECT id_materia_correlativa FROM Correlativas_previas WHERE id_materia = ?", idMateria);
+                for (Map corr : correlativas) {
+                    int idCorrelativa = ((Number) corr.get("id_materia_correlativa")).intValue();
+                    boolean correlativaAprobada = false;
+                    List<Model> catedrasCorr = Catedra.find("id_materia = ?", idCorrelativa);
+                    for (Model catCorr : catedrasCorr) {
+                        Inscripcion inscCorr = (Inscripcion) Inscripcion.findFirst(
+                            "legajo_alumno = ? AND id_catedra = ? AND estado_inscripcion = 'APROBADA'",
+                            legajoAlumno, catCorr.getInteger("id_catedra"));
+                        if (inscCorr != null) {
+                            correlativaAprobada = true;
+                            break;
+                        }
+                    }
+                    if (!correlativaAprobada) {
+                        Materia materiaCorr = (Materia) Materia.findFirst("id_materia = ?", idCorrelativa);
+                        String nombreCorr = materiaCorr != null ? materiaCorr.getString("nombre") : "Materia ID " + idCorrelativa;
+                        res.redirect("/inscripcion?error=No cumples con la correlativa: " + nombreCorr);
+                        return "";
+                    }
+                }
+
+                // Generar nuevo ID de inscripción
+                List<Map> maxIdResult = Base.findAll("SELECT COALESCE(MAX(id_inscripcion), 0) as max_id FROM Inscripcion");
+                int nuevoId = ((Number) maxIdResult.get(0).get("max_id")).intValue() + 1;
+
+                // Crear la inscripción
+                Inscripcion nuevaInscripcion = new Inscripcion();
+                nuevaInscripcion.set("id_inscripcion", nuevoId);
+                nuevaInscripcion.set("fecha_inscripcion", (int) (System.currentTimeMillis() / 1000));
+                nuevaInscripcion.set("estado_inscripcion", "EN_CURSADA");
+                nuevaInscripcion.set("legajo_alumno", legajoAlumno);
+                nuevaInscripcion.set("id_catedra", idCatedra);
+                nuevaInscripcion.insert();
+
+                // Obtener nombre de la materia para el mensaje de éxito
+                Materia mat = (Materia) Materia.findFirst("id_materia = ?", idMateria);
+                String nombreMateria = mat != null ? mat.getString("nombre") : "la materia";
+
+                res.redirect("/inscripcion?message=¡Inscripción exitosa en " + nombreMateria + "!");
+                return "";
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                res.redirect("/inscripcion?error=Error al procesar la inscripción: " + e.getMessage());
+                return "";
+            }
         });
 
         // --- FIN ABM ---

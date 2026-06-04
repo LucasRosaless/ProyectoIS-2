@@ -23,8 +23,8 @@ Se ha utilizado el framework **SparkJava** para definir las rutas HTTP. Cada ent
 - **Vistas**: `profesores.mustache` (listado) y `profesor_form.mustache` (creación y edición).
 
 ### 2. Alumnos (`/alumnos`)
-- **Modelos Involucrados**: `Persona` y `Alumno`.
-- **Lógica de Creación**: Al igual que con los profesores, se crea una `Persona` y luego un `Alumno`, asociando el legajo y el DNI. Adicionalmente, se captura el `tipo_alumno` (INGRESANTE o AVANZADO).
+- **Modelos Involucrados**: `Persona`, `Alumno` y `PlanEstudio`.
+- **Lógica de Creación**: Al igual que con los profesores, se crea una `Persona` y luego un `Alumno`, asociando el legajo y el DNI. Adicionalmente, se captura el `tipo_alumno` (INGRESANTE o AVANZADO) y se asocia un **Plan de Estudio** (`id_plan`) seleccionado mediante un menú desplegable dinámico.
 - **Vistas**: `alumnos.mustache` y `alumno_form.mustache`.
 
 ### 3. Carreras (`/carreras`)
@@ -41,6 +41,17 @@ Se ha utilizado el framework **SparkJava** para definir las rutas HTTP. Cada ent
 - **Modelos Involucrados**: `Materia` y `PlanEstudio`.
 - **Gestión**: Cada materia requiere estar asociada a un plan de estudio. El formulario solicita al usuario que elija un plan existente mediante un select dinámico que consulta la base de datos.
 - **Vistas**: `materias.mustache` y `materia_form.mustache`.
+
+### 6. Módulo de Inscripciones (`/inscripcion`)
+- **Modelos Involucrados**: `Alumno`, `Catedra`, `Materia`, `Inscripcion` y `Correlativas_previas`.
+- **Funcionamiento e Inscripción Inteligente**:
+  - `GET /inscripcion`: Recupera las materias pertenecientes al plan de estudio del alumno que inició sesión y determina su estado para la interfaz:
+    - **APROBADA**: Si el alumno ya la tiene aprobada.
+    - **EN_CURSADA / REGULAR**: Si ya cuenta con una inscripción activa en esos estados.
+    - **FALTAN_CORRELATIVAS**: Si adeuda materias correlativas obligatorias previas. Se listan las materias faltantes en la interfaz.
+    - **DISPONIBLE**: Si cumple con los prerrequisitos, habilitando un selector de cátedras (año/comisión) para inscribirse.
+  - `POST /inscripcion`: Procesa y persiste la inscripción con estado inicial `EN_CURSADA`. Valida nuevamente en el servidor que no haya inscripciones previas y que se cumplan las correlativas aprobadas antes de proceder a la inserción en la base de datos.
+- **Vistas**: `inscripcion.mustache`.
 
 ## Manejo de Transacciones y Errores
 
