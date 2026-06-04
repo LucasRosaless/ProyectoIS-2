@@ -1138,6 +1138,7 @@ public class App {
             // Obtiene los parámetros 'name' y 'password' de la solicitud.
             String name = req.queryParams("name");
             String password = req.queryParams("password");
+            String tipoUsuario = req.queryParams("tipo_usuario");
 
             // --- Validaciones básicas ---
             if (name == null || name.isEmpty() || password == null || password.isEmpty()) {
@@ -1148,14 +1149,12 @@ public class App {
             try {
                 // --- Creación y guardado del usuario usando el modelo ActiveJDBC ---
                 User newUser = new User(); // Crea una nueva instancia de tu modelo User.
-                // ¡ADVERTENCIA DE SEGURIDAD CRÍTICA!
-                // En una aplicación real, las contraseñas DEBEN ser hasheadas (ej. con BCrypt)
-                // ANTES de guardarse en la base de datos, NUNCA en texto plano.
-                // (Nota: El código original tenía la contraseña en texto plano aquí.
-                // Se recomienda usar `BCrypt.hashpw(password, BCrypt.gensalt())` como en la
-                // ruta '/user/new').
+                String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
                 newUser.set("name", name); // Asigna el nombre al campo 'name'.
-                newUser.set("password", password); // Asigna la contraseña al campo 'password'.
+                newUser.set("password", hashedPassword); // Asigna la contraseña hasheada.
+                if (tipoUsuario != null && !tipoUsuario.isEmpty()) {
+                    newUser.set("tipo_usuario", tipoUsuario);
+                }
                 newUser.saveIt(); // Guarda el nuevo usuario en la tabla 'users'.
 
                 res.status(201); // Created.
