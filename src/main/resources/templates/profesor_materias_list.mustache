@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Materias - Portal Docente - MiUni</title>
+    
+    <!-- Enlace a la hoja de estilos global unificada -->
+    <link rel="stylesheet" href="/styles.css">
+    
+    <!-- Librería de Iconos Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --primary: #10b981; /* Verde Esmeralda */
+            --primary-hover: #059669;
+            --primary-glow: rgba(16, 185, 129, 0.35);
+            --primary-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            --primary-gradient-hover: linear-gradient(135deg, #047857 0%, #059669 100%);
+        }
+        
+        body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.08) 0px, transparent 50%);
+        }
+
+        .materia-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .materia-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(16, 185, 129, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .materia-info h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .materia-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .materia-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .materia-meta i {
+            font-size: 1.05rem;
+            color: var(--primary);
+        }
+
+        .badge-rol {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: #34d399;
+            padding: 0.3rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--primary);
+            opacity: 0.5;
+            margin-bottom: 1.25rem;
+            display: block;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Buscador */
+        .search-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.25rem;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 3rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
+        }
+
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        @media (max-width: 650px) {
+            .materia-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1.25rem;
+            }
+            .materia-card .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navegación -->
+        <nav class="nav">
+            <a href="/dashboard-profesor" style="font-weight: 700;">← Panel Profesor</a>
+            <a href="/profile">Mi Perfil</a>
+            <a href="/profesor/materias" class="active">Materias</a>
+        </nav>
+
+        <!-- Panel Principal -->
+        <div class="glass-panel">
+            <div class="header-flex">
+                <h2><i class='bx bx-chalkboard' style="vertical-align: middle; margin-right: 0.5rem; color: var(--primary);"></i> Mis Materias Asignadas</h2>
+                <span class="badge-rol" style="font-size: 0.85rem;">Legajo: {{legajo_docente}}</span>
+            </div>
+
+            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">
+                A continuación se listan las cátedras en las que se encuentra registrado como docente para este ciclo académico. Seleccione una materia para cargar y gestionar las notas de los alumnos inscriptos.
+            </p>
+
+            <!-- Buscador interactivo -->
+            {{#tiene_materias}}
+            <div class="search-container">
+                <i class='bx bx-search'></i>
+                <input type="text" id="searchInput" placeholder="Buscar materia por nombre o comisión...">
+            </div>
+            {{/tiene_materias}}
+
+            <!-- Contenedor de Cátedras -->
+            <div id="materiasList">
+                {{#materias_asignadas}}
+                <div class="materia-card" data-search="{{materia_nombre}} {{comision}}">
+                    <div class="materia-info">
+                        <h3>{{materia_nombre}}</h3>
+                        <div class="materia-meta">
+                            <span><i class='bx bx-id-card'></i> Cátedra #{{id_catedra}}</span>
+                            <span><i class='bx bx-group'></i> Comisión {{comision}}</span>
+                            <span><i class='bx bx-calendar'></i> Año {{anio}}</span>
+                            <span><i class='bx bx-user-check'></i> Rol: <strong style="color: var(--text-main);">{{rol}}</strong></span>
+                        </div>
+                    </div>
+                    <a href="/profesor/materias/{{id_catedra}}/notas" class="btn btn-primary">
+                        <i class='bx bx-edit'></i> Gestionar Notas
+                    </a>
+                </div>
+                {{/materias_asignadas}}
+
+                {{^tiene_materias}}
+                <div class="empty-state">
+                    <i class='bx bx-book-open'></i>
+                    <h3>No posee materias asignadas</h3>
+                    <p>Actualmente no figura como docente en ninguna cátedra activa. Si considera que esto es un error, por favor comuníquese con el departamento de administración académica.</p>
+                </div>
+                {{/tiene_materias}}
+            </div>
+
+            <!-- Botón de retorno -->
+            <div style="text-align: center; margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <a href="/dashboard-profesor" class="btn btn-secondary">
+                    <i class='bx bx-left-arrow-alt'></i> Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de filtrado interactivo -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    const cards = document.querySelectorAll('.materia-card');
+                    
+                    cards.forEach(card => {
+                        const searchText = card.getAttribute('data-search').toLowerCase();
+                        if (searchText.includes(query)) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

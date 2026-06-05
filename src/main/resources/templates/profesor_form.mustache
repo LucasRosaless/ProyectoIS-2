@@ -49,6 +49,14 @@
                     <label>Correo Electrónico</label>
                     <input type="email" name="correo" value="{{#persona}}{{correo}}{{/persona}}" required>
                 </div>
+                <div class="form-group">
+                    <label>Usuario de Acceso</label>
+                    <input type="text" name="user_login" value="{{#persona}}{{user_login}}{{/persona}}" required placeholder="Usuario para ingresar al sistema">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña{{#profesor}} (dejar vacío para no cambiar){{/profesor}}</label>
+                    <input type="password" name="pass_login" {{^profesor}}required{{/profesor}} placeholder="{{#profesor}}Nueva contraseña (opcional){{/profesor}}{{^profesor}}Contraseña de acceso{{/profesor}}">
+                </div>
                 
                 <!-- Botón de guardar con icono de disquete -->
                 <button type="submit" class="btn btn-primary">

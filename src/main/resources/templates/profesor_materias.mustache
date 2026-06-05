@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materias del Profesor - MiUni - Project</title>
+    
+    <!-- Hoja de estilos global -->
+    <link rel="stylesheet" href="/styles.css">
+    
+    <!-- Iconos Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    <style>
+        /* Info banner del profesor */
+        .profesor-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 14px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .profesor-info i {
+            font-size: 1.5rem;
+            color: #a78bfa;
+        }
+
+        .profesor-info-text {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .profesor-info-text strong {
+            color: var(--text-main);
+        }
+
+        /* Secciones */
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            font-size: 1.2rem;
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin: 1.75rem 0;
+        }
+
+        /* Tarjeta de cátedra/materia */
+        .catedra-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .catedra-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .catedra-card.asignada {
+            background: rgba(16, 185, 129, 0.06);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .catedra-card.asignada:hover {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.35);
+        }
+
+        .catedra-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .catedra-titulo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .catedra-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 0.2rem;
+        }
+
+        .catedra-meta span {
+            margin-right: 1rem;
+        }
+
+        /* Badges */
+        .estado-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .estado-asignado {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .estado-disponible {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .rol-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            color: #c4b5fd;
+        }
+
+        /* Acciones de la tarjeta */
+        .catedra-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            flex-wrap: wrap;
+        }
+
+        .catedra-actions select {
+            max-width: 220px;
+            padding: 0.55rem 0.875rem;
+            font-size: 0.8rem;
+            border-radius: 10px;
+        }
+
+        .catedra-actions .btn {
+            padding: 0.55rem 1.25rem;
+            font-size: 0.8rem;
+        }
+
+        .catedra-info-msg {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .catedra-info-msg i {
+            font-size: 1rem;
+        }
+
+        .catedra-info-msg.success {
+            color: #34d399;
+        }
+
+        /* Barra de búsqueda */
+        .search-bar {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.25);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.25rem;
+        }
+
+        /* Estadísticas */
+        .stats-bar {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.75rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+    width: 31.5%;        }
+
+        .stat-item i {
+            font-size: 1.3rem;
+            color: #a78bfa;
+        }
+
+        .stat-item .stat-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stat-item .stat-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .stat-item.highlight i {
+            color: #34d399;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            color: #a78bfa;
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.6;
+        }
+
+        .empty-state p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .catedra-header {
+                flex-direction: column;
+            }
+            .catedra-actions {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .stats-bar {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navegación -->
+        <nav class="nav">
+            <a href="/dashboard"><i class='bx bx-arrow-back'></i> Dashboard</a>
+            <a href="/profesores"><i class='bx bx-id-card'></i> Profesores</a>
+            <a href="/alumnos"><i class='bx bx-group'></i> Alumnos</a>
+            <a href="/carreras"><i class='bx bx-git-repo-forked'></i> Carreras</a>
+            <a href="/planes"><i class='bx bx-book'></i> Planes</a>
+            <a href="/materias"><i class='bx bx-book-bookmark'></i> Materias</a>
+        </nav>
+
+        <!-- Panel principal -->
+        <div class="glass-panel">
+            <div class="header-flex">
+                <h2><i class='bx bx-book-reader'></i> Materias del Profesor</h2>
+                <a href="/profesores" class="btn btn-secondary">
+                    <i class='bx bx-arrow-back'></i> Volver
+                </a>
+            </div>
+
+            <!-- Alertas dinámicas -->
+            {{#successMessage}}
+            <div class="alert" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #a7f3d0;">
+                <i class='bx bx-check-circle' style="vertical-align: middle; margin-right: 0.25rem;"></i>
+                {{successMessage}}
+            </div>
+            {{/successMessage}}
+
+            {{#errorMessage}}
+            <div class="alert alert-error">
+                <i class='bx bx-error-circle' style="vertical-align: middle; margin-right: 0.25rem;"></i>
+                {{errorMessage}}
+            </div>
+            {{/errorMessage}}
+
+            <!-- Info del profesor -->
+            <div class="profesor-info">
+                <i class='bx bx-id-card'></i>
+                <div class="profesor-info-text">
+                    <strong>{{profesor_nombre}} {{profesor_apellido}}</strong> — Legajo: {{legajo_docente}}
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="stats-bar">
+                <div class="stat-item highlight">
+                    <i class='bx bx-check-shield'></i>
+                    <div>
+                        <div class="stat-value">{{total_asignadas}}</div>
+                        <div class="stat-label">Asignadas</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class='bx bx-library'></i>
+                    <div>
+                        <div class="stat-value">{{total_catedras}}</div>
+                        <div class="stat-label">Total Cátedras</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class='bx bx-list-plus'></i>
+                    <div>
+                        <div class="stat-value">{{total_disponibles}}</div>
+                        <div class="stat-label">Disponibles</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buscador -->
+            <div class="search-bar">
+                <i class='bx bx-search'></i>
+                <input type="text" id="searchInput" placeholder="Buscar materia por nombre..." autocomplete="off">
+            </div>
+
+            <!-- SECCIÓN 1: Cátedras asignadas -->
+            {{#tiene_asignadas}}
+            <div class="section-title" style="color: #34d399;">
+                <i class='bx bx-check-shield'></i> Cátedras Asignadas
+            </div>
+
+            <div id="asignadasContainer">
+                {{#catedras_asignadas}}
+                <div class="catedra-card asignada" data-nombre="{{materia_nombre}}">
+                    <div class="catedra-header">
+                        <div>
+                            <div class="catedra-titulo">{{materia_nombre}}</div>
+                            <div class="catedra-meta">
+                                <span><i class='bx bx-hash' style="vertical-align: middle;"></i> Cátedra #{{id_catedra}}</span>
+                                <span><i class='bx bx-calendar' style="vertical-align: middle;"></i> Año {{anio}}</span>
+                                <span><i class='bx bx-group' style="vertical-align: middle;"></i> Comisión {{comision}}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span class="rol-badge"><i class='bx bx-user-check'></i> {{rol}}</span>
+                            <span class="estado-badge estado-asignado">
+                                <i class='bx bx-check-double'></i> Asignado
+                            </span>
+                        </div>
+                    </div>
+                    <div class="catedra-actions">
+                        <span class="catedra-info-msg success">
+                            <i class='bx bx-check-circle'></i>
+                            Este profesor ya está asignado a esta cátedra.
+                        </span>
+                    </div>
+                </div>
+                {{/catedras_asignadas}}
+            </div>
+
+            <hr class="section-divider">
+            {{/tiene_asignadas}}
+
+            <!-- SECCIÓN 2: Cátedras disponibles para asignar -->
+            {{#tiene_disponibles}}
+            <div class="section-title">
+                <i class='bx bx-library'></i> Cátedras Disponibles
+            </div>
+
+            <div id="disponiblesContainer">
+                {{#catedras_disponibles}}
+                <div class="catedra-card" data-nombre="{{materia_nombre}}">
+                    <div class="catedra-header">
+                        <div>
+                            <div class="catedra-titulo">{{materia_nombre}}</div>
+                            <div class="catedra-meta">
+                                <span><i class='bx bx-hash' style="vertical-align: middle;"></i> Cátedra #{{id_catedra}}</span>
+                                <span><i class='bx bx-calendar' style="vertical-align: middle;"></i> Año {{anio}}</span>
+                                <span><i class='bx bx-group' style="vertical-align: middle;"></i> Comisión {{comision}}</span>
+                            </div>
+                        </div>
+                        <span class="estado-badge estado-disponible">
+                            <i class='bx bx-plus-circle'></i> Disponible
+                        </span>
+                    </div>
+                    <div class="catedra-actions">
+                        <form action="/profesores/{{legajo_docente}}/materias/asignar" method="POST" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                            <input type="hidden" name="id_catedra" value="{{id_catedra}}">
+                            <label style="font-size: 0.8rem; margin-bottom: 0; color: var(--text-muted); white-space: nowrap;">Rol:</label>
+                            <select name="rol" required>
+                                <option value="RESPONSABLE">Responsable</option>
+                                <option value="JEFE_PRACTICO">Jefe Práctico</option>
+                                <option value="AYUDANTE">Ayudante</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">
+                                <i class='bx bx-link'></i> Asignar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {{/catedras_disponibles}}
+            </div>
+            {{/tiene_disponibles}}
+
+            {{^tiene_catedras}}
+            <div class="empty-state">
+                <i class='bx bx-book-open'></i>
+                <p>No hay cátedras registradas en el sistema.<br>
+                Primero debe crear materias y cátedras desde el panel de administración.</p>
+            </div>
+            {{/tiene_catedras}}
+
+            <!-- Botón de volver -->
+            <div style="text-align: center; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <a href="/profesores" class="btn btn-secondary">
+                    <i class='bx bx-chevron-left'></i> Volver a Profesores
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de búsqueda interactiva -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    const cards = document.querySelectorAll('.catedra-card');
+                    
+                    cards.forEach(function(card) {
+                        const nombre = (card.getAttribute('data-nombre') || '').toLowerCase();
+                        
+                        if (nombre.includes(query)) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

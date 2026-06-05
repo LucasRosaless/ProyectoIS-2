@@ -41,6 +41,7 @@
                         <th>Nombre</th>
                         <th>Apellido</th>
                         <th>Correo</th>
+                        <th>Usuario</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -52,9 +53,13 @@
                         <td>{{nombre}}</td>
                         <td>{{apellido}}</td>
                         <td>{{correo}}</td>
+                        <td>{{user_login}}</td>
                         <td class="actions">
                             <a href="/profesores/{{legajo_docente}}/edit" class="btn btn-secondary">
                                 <i class='bx bx-edit-alt'></i> Editar
+                            </a>
+                            <a href="/profesores/{{legajo_docente}}/materias" class="btn btn-primary">
+                                <i class='bx bx-book-reader'></i> Materias
                             </a>
                             <form action="/profesores/{{legajo_docente}}/delete" method="POST" style="display:inline;">
                                 <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que desea eliminar a este profesor?');">

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carreras - MiUni - Project</title>
+    
+    <!-- Hoja de estilos global -->
+    <link rel="stylesheet" href="/styles.css">
+    
+    <!-- Iconos Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        /* Variables de color para Alumnos (Azul) */
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-glow: rgba(59, 130, 246, 0.35);
+            --primary-gradient: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            --primary-gradient-hover: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+        }
+        
+        body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+        }
+
+        /* Sección de carreras inscriptas */
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            font-size: 1.2rem;
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin: 1.75rem 0;
+        }
+
+        /* Barra de búsqueda */
+        .search-bar {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.25rem;
+        }
+
+        /* Tarjeta de carrera */
+        .carrera-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .carrera-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Carrera inscripta: estilo destacado */
+        .carrera-card.inscripta {
+            background: rgba(16, 185, 129, 0.06);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .carrera-card.inscripta:hover {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.35);
+        }
+
+        .carrera-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .carrera-titulo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .carrera-codigo {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 0.2rem;
+        }
+
+        .carrera-duracion {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .carrera-duracion i {
+            font-size: 0.95rem;
+        }
+
+        /* Badges de estado */
+        .estado-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .estado-inscripto {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .estado-disponible {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        /* Sección de acción en la tarjeta */
+        .carrera-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .carrera-actions .btn {
+            padding: 0.55rem 1.25rem;
+            font-size: 0.8rem;
+        }
+
+        .carrera-info-msg {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .carrera-info-msg i {
+            font-size: 1rem;
+        }
+
+        .carrera-info-msg.success {
+            color: #34d399;
+        }
+
+        /* Plan de estudio info */
+        .plan-tag {
+            font-size: 0.72rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            color: #93c5fd;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* Estadísticas resumen */
+        .stats-bar {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.75rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+    width: 31.5%;        }
+
+        .stat-item i {
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
+        .stat-item .stat-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stat-item .stat-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .stat-item.highlight i {
+            color: #34d399;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.6;
+        }
+
+        .empty-state p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .carrera-header {
+                flex-direction: column;
+            }
+            .stats-bar {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navegación -->
+        <nav class="nav">
+            <a href="/dashboard-alumno" style="font-weight: 700;">← Panel Estudiante</a>
+            <a href="/profile">Tu Perfil</a>
+            <a href="/mis-carreras" style="color: var(--text-main);">Carreras</a>
+            <a href="/inscripcion">Inscripción</a>
+        </nav>
+
+        <!-- Panel principal -->
+        <div class="glass-panel">
+            <div class="header-flex">
+                <h2><i class='bx bx-award'></i> Carreras</h2>
+                <div class="user-badge">
+                    <i class='bx bx-user'></i>
+                    <span>{{#username}}{{username}}{{/username}}{{^username}}Alumno{{/username}}</span>
+                </div>
+            </div>
+
+            <!-- Alertas dinámicas -->
+            {{#successMessage}}
+            <div class="alert" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #a7f3d0;">
+                <i class='bx bx-check-circle' style="vertical-align: middle; margin-right: 0.25rem;"></i>
+                {{successMessage}}
+            </div>
+            {{/successMessage}}
+
+            {{#errorMessage}}
+            <div class="alert alert-error">
+                <i class='bx bx-error-circle' style="vertical-align: middle; margin-right: 0.25rem;"></i>
+                {{errorMessage}}
+            </div>
+            {{/errorMessage}}
+
+            <!-- Barra de estadísticas -->
+            <div class="stats-bar">
+                <div class="stat-item highlight">
+                    <i class='bx bx-check-shield'></i>
+                    <div>
+                        <div class="stat-value">{{total_inscriptas}}</div>
+                        <div class="stat-label">Inscripto</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class='bx bx-library'></i>
+                    <div>
+                        <div class="stat-value">{{total_carreras}}</div>
+                        <div class="stat-label">Total Carreras</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class='bx bx-list-plus'></i>
+                    <div>
+                        <div class="stat-value">{{total_disponibles}}</div>
+                        <div class="stat-label">Disponibles</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buscador -->
+            <div class="search-bar">
+                <i class='bx bx-search'></i>
+                <input type="text" id="searchInput" placeholder="Buscar carrera por nombre o código..." autocomplete="off">
+            </div>
+
+            <!-- SECCIÓN 1: Carreras en las que estoy inscripto -->
+            {{#tiene_inscriptas}}
+            <div class="section-title" style="color: #34d399;">
+                <i class='bx bx-check-shield'></i> Mis Carreras (Inscripto)
+            </div>
+
+            <div id="inscriptasContainer">
+                {{#carreras_inscriptas}}
+                <div class="carrera-card inscripta" data-nombre="{{nombre}}" data-codigo="{{codigo}}">
+                    <div class="carrera-header">
+                        <div>
+                            <div class="carrera-titulo">{{nombre}}</div>
+                            <div class="carrera-codigo">Código: {{codigo}}</div>
+                            <div class="carrera-duracion">
+                                <i class='bx bx-calendar'></i> Duración: {{duracion_anios}} años
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            {{#plan_resolucion}}
+                            <span class="plan-tag">Plan: {{plan_resolucion}}</span>
+                            {{/plan_resolucion}}
+                            <span class="estado-badge estado-inscripto">
+                                <i class='bx bx-check-double'></i> Inscripto
+                            </span>
+                        </div>
+                    </div>
+                    <div class="carrera-actions">
+                        <span class="carrera-info-msg success">
+                            <i class='bx bx-check-circle'></i>
+                            Estás inscripto en esta carrera.
+                        </span>
+                    </div>
+                </div>
+                {{/carreras_inscriptas}}
+            </div>
+
+            <hr class="section-divider">
+            {{/tiene_inscriptas}}
+
+            <!-- SECCIÓN 2: Carreras disponibles para inscribirse -->
+            {{#tiene_disponibles}}
+            <div class="section-title">
+                <i class='bx bx-library'></i> Carreras Disponibles
+            </div>
+
+            <div id="disponiblesContainer">
+                {{#carreras_disponibles}}
+                <div class="carrera-card" data-nombre="{{nombre}}" data-codigo="{{codigo}}">
+                    <div class="carrera-header">
+                        <div>
+                            <div class="carrera-titulo">{{nombre}}</div>
+                            <div class="carrera-codigo">Código: {{codigo}}</div>
+                            <div class="carrera-duracion">
+                                <i class='bx bx-calendar'></i> Duración: {{duracion_anios}} años
+                            </div>
+                        </div>
+                        <span class="estado-badge estado-disponible">
+                            <i class='bx bx-plus-circle'></i> Disponible
+                        </span>
+                    </div>
+                    <div class="carrera-actions">
+                        <form action="/mis-carreras/inscribir" method="POST" style="display: flex; align-items: center; gap: 0.75rem;">
+                            <input type="hidden" name="id_carrera" value="{{id_carrera}}">
+                            <button type="submit" class="btn btn-primary" onclick="return confirm('¿Confirmas tu inscripción a la carrera {{nombre}}?');">
+                                <i class='bx bx-plus-circle'></i> Inscribirme
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {{/carreras_disponibles}}
+            </div>
+            {{/tiene_disponibles}}
+
+            {{^tiene_carreras}}
+            <div class="empty-state">
+                <i class='bx bx-library'></i>
+                <p>No hay carreras registradas en el sistema.<br>
+                Contacta a la administración si crees que esto es un error.</p>
+            </div>
+            {{/tiene_carreras}}
+
+            <!-- Botón de volver -->
+            <div style="text-align: center; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <a href="/dashboard-alumno" class="btn btn-secondary">
+                    <i class='bx bx-chevron-left'></i> Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de búsqueda interactiva -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    const cards = document.querySelectorAll('.carrera-card');
+                    
+                    cards.forEach(function(card) {
+                        const nombre = (card.getAttribute('data-nombre') || '').toLowerCase();
+                        const codigo = (card.getAttribute('data-codigo') || '').toLowerCase();
+                        
+                        if (nombre.includes(query) || codigo.includes(query)) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

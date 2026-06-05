@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargar Notas - Portal Docente - MiUni</title>
+    
+    <!-- Enlace a la hoja de estilos global unificada -->
+    <link rel="stylesheet" href="/styles.css">
+    
+    <!-- Librería de Iconos Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --primary: #10b981; /* Verde Esmeralda */
+            --primary-hover: #059669;
+            --primary-glow: rgba(16, 185, 129, 0.35);
+            --primary-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            --primary-gradient-hover: linear-gradient(135deg, #047857 0%, #059669 100%);
+        }
+        
+        body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.08) 0px, transparent 50%);
+        }
+
+        .materia-header-panel {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .materia-header-panel h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.35rem;
+        }
+
+        .materia-header-panel p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .materia-header-panel .materia-details {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .materia-header-panel .materia-details span {
+            font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            color: var(--text-muted);
+        }
+
+        /* Tabla de alumnos */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        /* Contenedor de Notas */
+        .notes-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .note-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        .note-parcial {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+
+        .note-tp {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+        }
+
+        .note-final {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        .delete-note-form {
+            display: inline-flex;
+            margin: 0;
+            padding: 0;
+        }
+
+        .delete-note-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s ease;
+        }
+
+        .delete-note-btn:hover {
+            color: #f87171;
+        }
+
+        /* Buscador */
+        .search-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.25rem;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 3rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
+        }
+
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .empty-table-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .empty-table-state i {
+            font-size: 3rem;
+            margin-bottom: 0.75rem;
+            display: block;
+            opacity: 0.5;
+        }
+
+        /* Formulario de carga rápida inline */
+        .form-cargar-nota {
+            display: flex;
+            gap: 0.35rem;
+            align-items: center;
+        }
+
+        .form-cargar-nota select {
+            padding: 0.4rem 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 90px;
+        }
+
+        .form-cargar-nota input {
+            padding: 0.4rem 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 55px;
+            text-align: center;
+        }
+
+        .form-cargar-nota button {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.8rem;
+            border-radius: 8px;
+            min-height: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navegación -->
+        <nav class="nav">
+            <a href="/dashboard-profesor" style="font-weight: 700;">← Panel Profesor</a>
+            <a href="/profile">Mi Perfil</a>
+            <a href="/profesor/materias">Materias</a>
+        </nav>
+
+        <!-- Panel Principal -->
+        <div class="glass-panel">
+            <div class="header-flex" style="margin-bottom: 1.5rem;">
+                <h2><i class='bx bx-edit' style="vertical-align: middle; margin-right: 0.5rem; color: var(--primary);"></i> Gestión de Calificaciones</h2>
+                <a href="/profesor/materias" class="btn btn-secondary">
+                    <i class='bx bx-arrow-back'></i> Volver
+                </a>
+            </div>
+
+            <!-- Cabecera de Materia -->
+            <div class="materia-header-panel">
+                <div>
+                    <h3>{{materia_nombre}}</h3>
+                    <p>Gestiona, añade y elimina las notas correspondientes a los alumnos registrados en esta comisión.</p>
+                    <div class="materia-details">
+                        <span><strong>Cátedra:</strong> #{{id_catedra}}</span>
+                        <span><strong>Comisión:</strong> {{comision}}</span>
+                        <span><strong>Año:</strong> {{anio}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alertas dinámicas -->
+            {{#successMessage}}
+            <div class="alert" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #a7f3d0; margin-bottom: 1.5rem;">
+                <i class='bx bx-check-circle' style="vertical-align: middle; margin-right: 0.25rem;"></i>
+                {{successMessage}}
+            </div>
+            {{/successMessage}}
+
+            {{#errorMessage}}
+            <div class="alert alert-error" style="margin-bottom: 1.5rem;">
+                <i class='bx bx-error-circle' style="vertical-align: middle; margin-right: 0.25rem;"></i>
+                {{errorMessage}}
+            </div>
+            {{/errorMessage}}
+
+            <!-- Buscador de Alumnos -->
+            {{#tiene_alumnos}}
+            <div class="search-container">
+                <i class='bx bx-search'></i>
+                <input type="text" id="alumnoSearchInput" placeholder="Buscar alumno por nombre, apellido o legajo...">
+            </div>
+            {{/tiene_alumnos}}
+
+            <!-- Tabla de alumnos inscriptos -->
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Legajo</th>
+                            <th style="width: 30%;">Nombre y Apellido</th>
+                            <th style="width: 30%;">Notas cargadas</th>
+                            <th style="width: 25%;">Nueva Nota</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alumnosTableBody">
+                        {{#alumnos_inscriptos}}
+                        <tr class="alumno-row" data-search="{{legajo}} {{nombre}} {{apellido}}">
+                            <td><strong>{{legajo}}</strong></td>
+                            <td>{{nombre}} {{apellido}}</td>
+                            <td>
+                                <div class="notes-container">
+                                    {{#notas}}
+                                    <span class="note-badge note-{{tipo_css}}">
+                                        {{tipo_nota}}: <strong>{{valor}}</strong>
+                                        <form action="/profesor/materias/{{id_catedra}}/notas/{{id_nota}}/delete" method="POST" class="delete-note-form" onsubmit="return confirm('¿Seguro que desea eliminar esta nota?');">
+                                            <button type="submit" class="delete-note-btn" title="Eliminar nota">
+                                                <i class='bx bx-x' style="font-size: 0.9rem;"></i>
+                                            </button>
+                                        </form>
+                                    </span>
+                                    {{/notas}}
+                                    {{^notas}}
+                                    <em style="color: var(--text-muted); font-size: 0.8rem;">Sin notas</em>
+                                    {{/notas}}
+                                </div>
+                            </td>
+                            <td>
+                                <form action="/profesor/materias/{{id_catedra}}/notas/agregar" method="POST" class="form-cargar-nota">
+                                    <input type="hidden" name="id_inscripcion" value="{{id_inscripcion}}">
+                                    <select name="tipo_nota" required>
+                                        <option value="PARCIAL">Parcial</option>
+                                        <option value="TP">TP</option>
+                                        <option value="FINAL">Final</option>
+                                    </select>
+                                    <input type="number" name="valor" min="1" max="10" placeholder="Nota" required>
+                                    <button type="submit" class="btn btn-primary" title="Cargar Calificación">
+                                        <i class='bx bx-plus'></i> Cargar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {{/alumnos_inscriptos}}
+
+                        {{^tiene_alumnos}}
+                        <tr>
+                            <td colspan="4" class="empty-table-state">
+                                <i class='bx bx-group'></i>
+                                No hay alumnos inscriptos en esta cátedra.
+                            </td>
+                        </tr>
+                        {{/tiene_alumnos}}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Botones inferiores -->
+            <div style="text-align: center; margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <a href="/profesor/materias" class="btn btn-secondary">
+                    <i class='bx bx-chevron-left'></i> Volver a Mis Materias
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de filtrado interactivo -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('alumnoSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    const rows = document.querySelectorAll('.alumno-row');
+                    
+                    rows.forEach(row => {
+                        const searchText = row.getAttribute('data-search').toLowerCase();
+                        if (searchText.includes(query)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

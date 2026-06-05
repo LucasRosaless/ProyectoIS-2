@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Materias - Portal Alumno - MiUni</title>
+    
+    <!-- Enlace a la hoja de estilos global unificada -->
+    <link rel="stylesheet" href="/styles.css">
+    
+    <!-- Librería de Iconos Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --primary: #3b82f6; /* Azul Alumno */
+            --primary-hover: #2563eb;
+            --primary-glow: rgba(59, 130, 246, 0.35);
+            --primary-gradient: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            --primary-gradient-hover: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+        }
+        
+        body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+        }
+
+        .plan-header-panel {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+        }
+
+        .plan-header-panel h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.35rem;
+        }
+
+        .plan-header-panel p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .plan-details {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .plan-details span {
+            font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .plan-details i {
+            color: var(--primary);
+        }
+
+        /* Tabla de materias */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        /* Badges de notas y estado */
+        .badge-estado {
+            padding: 0.3rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            display: inline-block;
+            border: 1px solid transparent;
+        }
+
+        .estado-en_cursada {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.25);
+            color: #60a5fa;
+        }
+
+        .estado-regular {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
+        }
+
+        .estado-aprobada {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.25);
+            color: #34d399;
+        }
+
+        .estado-libre {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.25);
+            color: #f87171;
+        }
+
+        .notes-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .note-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.65rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        .note-parcial {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+
+        .note-tp {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+        }
+
+        .note-final {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        /* Buscador */
+        .search-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.25rem;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 3rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
+        }
+
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .empty-table-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-table-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.5;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navegación -->
+        <nav class="nav">
+            <a href="/dashboard-alumno" style="font-weight: 700;">← Panel Alumno</a>
+            <a href="/profile">Mi Perfil</a>
+            <a href="/mis-carreras">Carreras</a>
+            <a href="/alumno/materias" class="active">Mis Materias</a>
+        </nav>
+
+        <!-- Panel Principal -->
+        <div class="glass-panel">
+            <div class="header-flex" style="margin-bottom: 1.5rem;">
+                <h2><i class='bx bx-book-open' style="vertical-align: middle; margin-right: 0.5rem; color: var(--primary);"></i> Mi Historial Académico</h2>
+                <span class="badge-estado estado-en_cursada" style="font-size: 0.8rem;">Legajo: {{legajo_alumno}}</span>
+            </div>
+
+            <!-- Cabecera de Plan y Carrera -->
+            <div class="plan-header-panel">
+                <div>
+                    {{#tiene_plan}}
+                    <h3>Carrera: {{carrera_nombre}}</h3>
+                    <p>Visualiza el plan de estudio al que estás asignado, tu estado de cursada y las calificaciones cargadas.</p>
+                    <div class="plan-details">
+                        <span><i class='bx bx-git-branch'></i> <strong>Plan Resol:</strong> {{plan_resolucion}}</span>
+                        <span><i class='bx bx-calendar'></i> <strong>Año de Vigencia:</strong> {{plan_anio}}</span>
+                    </div>
+                    {{/tiene_plan}}
+                    {{^tiene_plan}}
+                    <h3>Sin Plan de Estudio Asignado</h3>
+                    <p>Actualmente no cuentas con un plan de estudio o carrera activa asociada a tu legajo. Por favor, inscríbete en una carrera en la sección correspondiente.</p>
+                    {{/tiene_plan}}
+                </div>
+            </div>
+
+            <!-- Buscador de Materias -->
+            {{#tiene_materias}}
+            <div class="search-container">
+                <i class='bx bx-search'></i>
+                <input type="text" id="materiaSearchInput" placeholder="Buscar materia por nombre, comisión o estado...">
+            </div>
+            {{/tiene_materias}}
+
+            <!-- Tabla de materias inscriptas -->
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 35%;">Materia</th>
+                            <th style="width: 20%;">Comisión / Año</th>
+                            <th style="width: 20%;">Estado de Cursada</th>
+                            <th style="width: 25%;">Calificaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="materiasTableBody">
+                        {{#materias_inscriptas}}
+                        <tr class="materia-row" data-search="{{materia_nombre}} {{comision}} {{estado_inscripcion}}">
+                            <td><strong>{{materia_nombre}}</strong></td>
+                            <td>Comisión {{comision}} (Año {{anio}})</td>
+                            <td>
+                                <span class="badge-estado estado-{{estado_css}}">
+                                    {{estado_inscripcion}}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="notes-container">
+                                    {{#notas}}
+                                    <span class="note-badge note-{{tipo_css}}" title="Fecha: {{fecha_formateada}}">
+                                        {{tipo_nota}}: <strong>{{valor}}</strong>
+                                    </span>
+                                    {{/notas}}
+                                    {{^notas}}
+                                    <em style="color: var(--text-muted); font-size: 0.8rem;">Sin notas cargadas</em>
+                                    {{/notas}}
+                                </div>
+                            </td>
+                        </tr>
+                        {{/materias_inscriptas}}
+
+                        {{^tiene_materias}}
+                        <tr>
+                            <td colspan="4" class="empty-table-state">
+                                <i class='bx bx-book-open'></i>
+                                No registras inscripciones en ninguna materia actualmente.
+                            </td>
+                        </tr>
+                        {{/tiene_materias}}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Botones inferiores -->
+            <div style="text-align: center; margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <a href="/dashboard-alumno" class="btn btn-secondary">
+                    <i class='bx bx-chevron-left'></i> Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de filtrado interactivo -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('materiaSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    const rows = document.querySelectorAll('.materia-row');
+                    
+                    rows.forEach(row => {
+                        const searchText = row.getAttribute('data-search').toLowerCase();
+                        if (searchText.includes(query)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
