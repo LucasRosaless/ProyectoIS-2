@@ -2,7 +2,6 @@
 
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white)
-![Spark](https://img.shields.io/badge/Spark-000000?style=for-the-badge&logo=apache-spark&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
 
 Bienvenido al repositorio oficial del **Sistema de Gestión Universitaria**. Este proyecto es una aplicación web robusta desarrollada en Java utilizando el framework Spark, diseñada para gestionar usuarios, alumnos, profesores, cátedras y datos académicos (como inscripciones y notas) de manera eficiente.
@@ -27,27 +26,27 @@ El proyecto sigue la convención estándar de **Maven**, organizada de la siguie
 
 ```text
 ProyectoIS-2/
-├── 📂 db/                      # Archivos de base de datos SQLite (.db)
-│   ├── 📄 dev.db               # Base de datos de desarrollo
-│   └── 📄 prod.db              # Base de datos de producción (esquema inicial)
-├── 📂 Docs/                    # Documentación técnica, diseño y gestión del proyecto
-│   ├── 📄 Auditoría.md         # Análisis y matriz de riesgos
-│   ├── 📄 Documentacion_ABM.md # Guía de módulos CRUD e inscripciones
-│   ├── 📄 Documentacion_Tests.md # Documentación detallada de la suite de testing
-│   ├── 📄 Requirements.md      # Requerimientos y plazos del proyecto
-│   └── 📄 design.md            # Arquitectura del sistema y diagramas UML
-├── 📂 src/                     # Código fuente del proyecto
+├── 📂 db/                         # Archivos de base de datos SQLite (.db)
+│   ├── 📄 dev.db                     # Base de datos de desarrollo Backup inicial
+│   └── 📄 prod.db                    # Base de datos de producción (esquema inicial)
+├── 📂 Docs/                       # Documentación técnica, diseño y gestión del proyecto
+│   ├── 📄 Auditoría.md               # Análisis y matriz de riesgos
+│   ├── 📄 Documentacion_ABM.md       # Guía de módulos CRUD e inscripciones
+│   ├── 📄 Documentacion_Tests.md     # Documentación detallada de la suite de testing
+│   ├── 📄 Requirements.md            # Requerimientos y plazos del proyecto
+│   └── 📄 design.md                  # Arquitectura del sistema y diagramas UML
+├── 📂 src/                        # Código fuente del proyecto
 │   ├── 📂 main/
-│   │   ├── 📂 java/            # Lógica de negocio (Java)
+│   │   ├── 📂 java/               # Lógica de negocio (Java)
 │   │   │   └── 📂 com/is1/proyecto/
 │   │   │       ├── 📄 App.java      # Servidor web, definición de filtros, rutas y controladores (Spark)
 │   │   │       ├── 📂 config/       # Configuración e inicialización de la BD (DBConfigSingleton)
 │   │   │       └── 📂 models/       # Modelos del dominio con ORM ActiveJDBC (User, Persona, Alumno, etc.)
-│   │   └── 📂 resources/       # Recursos estáticos y del servidor
+│   │   └── 📂 resources/          # Recursos estáticos y del servidor
 │   │       ├── 📂 public/           # Hojas de estilo y archivos estáticos (styles.css)
 │   │       ├── 📂 templates/        # Vistas de la aplicación (.mustache)
 │   │       └── 📄 scheme.sql        # Script DDL de creación de tablas de la BD
-│   └── 📂 test/                # Suite de pruebas automatizadas
+│   └── 📂 test/                   # Suite de pruebas automatizadas
 │       └── 📂 java/
 │           └── 📂 com/is1/proyecto/
 │               ├── 📄 AppTest.java               # Pruebas básicas del entorno
