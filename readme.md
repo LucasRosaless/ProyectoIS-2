@@ -5,79 +5,112 @@
 ![Spark](https://img.shields.io/badge/Spark-000000?style=for-the-badge&logo=apache-spark&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
 
-Bienvenido al repositorio oficial del **Sistema de Gestión Universitaria**. Este proyecto es una aplicación web robusta desarrollada en Java utilizando el framework Spark, diseñada para gestionar usuarios, profesores y datos académicos de manera eficiente.
+Bienvenido al repositorio oficial del **Sistema de Gestión Universitaria**. Este proyecto es una aplicación web robusta desarrollada en Java utilizando el framework Spark, diseñada para gestionar usuarios, alumnos, profesores, cátedras y datos académicos (como inscripciones y notas) de manera eficiente.
 
 ---
 
-## <img src="https://unpkg.com/boxicons@2.1.4/svg/regular/bx-file.svg" width="24" height="24" style="vertical-align: middle;"> Panel de Documentación Detallada
+## 📘 Panel de Documentación Detallada
 
-Accede a los detalles específicos de cada fase del desarrollo:
+Accede a los detalles específicos de cada fase del desarrollo y aspectos técnicos:
 
-*   📘 **[Análisis de Requerimientos](https://github.com/LucasRosaless/ProyectoIS-2/blob/main/Requirements.md)**: Actores, casos de uso y requerimientos funcionales/no funcionales.
-*   🎨 **[Diseño del Sistema](https://github.com/LucasRosaless/ProyectoIS-2/blob/main/design.md)**: Arquitectura, esquema de BD SQLite y diseño de UI.
-*   🛡️ **[Auditoría y Gestión](https://github.com/LucasRosaless/ProyectoIS-2/blob/main/Auditoría.md)**: Metodología Scrum, seguimiento de Sprints y bitácora.
+*   📋 **[Análisis de Requerimientos](Docs/Requirements.md)**: Definición del problema, actores y entidades del dominio, requerimientos funcionales/no funcionales y stack tecnológico seleccionado.
+*   🎨 **[Diseño del Sistema](Docs/design.md)**: Arquitectura en capas (Mustache, Java y SQLite), diagrama de componentes y diagrama de clases UML del modelo de dominio.
+*   🛡️ **[Auditoría y Gestión de Riesgos](Docs/Auditoría.md)**: Matriz de riesgos detallada (Técnicos, Organizacionales, de Planificación y Humanos) y análisis comparativo entre IA y el equipo.
+*   🔧 **[Módulos ABM e Inscripción](Docs/Documentacion_ABM.md)**: Detalle técnico de los endpoints RESTful en SparkJava, flujo de transacciones con ActiveJDBC y la validación lógica de correlativas para inscripciones inteligentes.
+*   🧪 **[Suite de Testing y Validación UML](Docs/Documentacion_Tests.md)**: Guía detallada de las pruebas unitarias y de integración (`ModelTest`, `ComprehensiveWorkflowTest`), y validación de alineación con el modelo de clases UML.
 
 ---
 
-## <img src="https://unpkg.com/boxicons@2.1.4/svg/regular/bx-folder.svg" width="24" height="24" style="vertical-align: middle;"> Estructura del Proyecto
+## 📂 Estructura del Proyecto
 
 El proyecto sigue la convención estándar de **Maven**, organizada de la siguiente manera:
 
 ```text
 ProyectoIS-2/
-├── 📂 db/                # Archivos de base de datos SQLite (.db)
-├── 📂 Docs/              # Documentación técnica y funcional
-├── 📂 src/               # Código fuente del proyecto
+├── 📂 db/                      # Archivos de base de datos SQLite (.db)
+│   ├── 📄 dev.db               # Base de datos de desarrollo
+│   └── 📄 prod.db              # Base de datos de producción (esquema inicial)
+├── 📂 Docs/                    # Documentación técnica, diseño y gestión del proyecto
+│   ├── 📄 Auditoría.md         # Análisis y matriz de riesgos
+│   ├── 📄 Documentacion_ABM.md # Guía de módulos CRUD e inscripciones
+│   ├── 📄 Documentacion_Tests.md # Documentación detallada de la suite de testing
+│   ├── 📄 Requirements.md      # Requerimientos y plazos del proyecto
+│   └── 📄 design.md            # Arquitectura del sistema y diagramas UML
+├── 📂 src/                     # Código fuente del proyecto
 │   ├── 📂 main/
-│   │   ├── 📂 java/      # Lógica de negocio (Java)
+│   │   ├── 📂 java/            # Lógica de negocio (Java)
 │   │   │   └── 📂 com/is1/proyecto/
-│   │   │       ├── 📄 App.java      # Clase principal (Rutas y Configuración)
-│   │   │       ├── 📂 config/      # Configuraciones (Singletons, DB)
-│   │   │       └── 📂 models/      # Modelos de ActiveJDBC (User, Profesor)
-│   │   └── 📂 resources/ # Recursos estáticos y plantillas
-│   │       ├── 📂 templates/       # Vistas Mustache (.mustache)
-│   │       └── 📄 scheme.sql      # Script de creación de tablas
-│   └── 📂 test/          # Pruebas unitarias e integración
-├── 📄 pom.xml            # Configuración de dependencias de Maven
-└── 📄 index.html         # Punto de entrada estático (opcional)
+│   │   │       ├── 📄 App.java      # Servidor web, definición de filtros, rutas y controladores (Spark)
+│   │   │       ├── 📂 config/       # Configuración e inicialización de la BD (DBConfigSingleton)
+│   │   │       └── 📂 models/       # Modelos del dominio con ORM ActiveJDBC (User, Persona, Alumno, etc.)
+│   │   └── 📂 resources/       # Recursos estáticos y del servidor
+│   │       ├── 📂 public/           # Hojas de estilo y archivos estáticos (styles.css)
+│   │       ├── 📂 templates/        # Vistas de la aplicación (.mustache)
+│   │       └── 📄 scheme.sql        # Script DDL de creación de tablas de la BD
+│   └── 📂 test/                # Suite de pruebas automatizadas
+│       └── 📂 java/
+│           └── 📂 com/is1/proyecto/
+│               ├── 📄 AppTest.java               # Pruebas básicas del entorno
+│               ├── 📄 ComprehensiveWorkflowTest.java # Escenarios de integración (cursadas, correlativas, promedios)
+│               └── 📄 ModelTest.java             # Pruebas unitarias de persistencia (CRUD) de los modelos
+├── 📄 pom.xml                  # Configuración de Maven, dependencias y plugins (ActiveJDBC, Shading, etc.)
+└── 📄 dependency-reduced-pom.xml # POM simplificado generado durante el empaquetado del JAR
 ```
 
 ---
 
-## <img src="https://unpkg.com/boxicons@2.1.4/svg/regular/bx-rocket.svg" width="24" height="24" style="vertical-align: middle;"> Guía de Ejecución
+## 🚀 Guía de Ejecución y Desarrollo
 
 Para poner en marcha el proyecto localmente, asegúrate de tener instalado **Java 11** (o superior) y **Maven**.
 
-### <img src="https://unpkg.com/boxicons@2.1.4/svg/regular/bx-wrench.svg" width="24" height="24" style="vertical-align: middle;"> Proceso con Maven
+> [!NOTE]
+> Este proyecto utiliza **ActiveJDBC**, un ORM que requiere un paso de instrumentación de bytecode (ActiveJDBC Instrumentation) sobre las clases compiladas para poder interactuar correctamente con la base de datos SQLite.
 
-Para ejecutar el proyecto, sigue estos pasos en tu terminal:
+### 🔧 Proceso con Maven
 
-1.  **Limpiar e Instalar Dependencias:**
-    Este comando prepara el entorno, descarga las librerías necesarias y realiza la instrumentación de ActiveJDBC.
+Ejecuta los siguientes comandos desde la terminal en el directorio raíz del proyecto:
+
+1.  **Limpiar, Compilar e Instrumentar:**
+    Prepara el entorno limpiando directorios antiguos, compilando y ejecutando la fase de instrumentación de ActiveJDBC de forma explícita:
+    ```bash
+    mvn clean process-classes
+    ```
+
+2.  **Compilar, Instrumentar y Ejecutar (En un solo comando):**
+    Compila el proyecto, aplica la instrumentación obligatoria y levanta el servidor web Spark de forma inmediata:
+    ```bash
+    mvn compile process-classes exec:java
+    ```
+
+3.  **Limpiar e Instalar Dependencias:**
+    Prepara el entorno completo de dependencias de Maven, compila, instrumenta e instala en el repositorio local:
     ```bash
     mvn clean install
     ```
 
-2.  **Compilar (Alternativo):**
-    Si solo deseas compilar sin instalar en el repositorio local:
-    ```bash
-    mvn clean compile
-    ```
-
-3.  **Ejecutar la Aplicación:**
-    Inicia el servidor web Spark (asegúrate de haber compilado primero).
-    ```bash
-    mvn exec:java
-    ```
-
-3.  **Ver el Proyecto:**
-    Una vez que la terminal indique que el servidor está corriendo, abre tu navegador en:
+4.  **Acceder a la Aplicación:**
+    Una vez que la consola indique que el servidor web se encuentra activo, abre tu navegador en:
     👉 [**http://localhost:4567/**](http://localhost:4567/)
 
+5.  **Ejecutar la Suite de Pruebas:**
+    Para verificar que todas las reglas de negocio, validaciones del modelo UML, flujos de inscripción y base de datos estén funcionando correctamente:
+    ```bash
+    mvn clean test
+    ```
+
+6.  **Empaquetar en un JAR Ejecutable:**
+    Para generar un JAR ejecutable "sombreado" (fat JAR) con todas las dependencias embebidas en `target/proye-is-1.0-SNAPSHOT.jar`:
+    ```bash
+    mvn clean package
+    ```
+    Para iniciar el servidor mediante el archivo JAR compilado:
+    ```bash
+    java -jar target/proye-is-1.0-SNAPSHOT.jar
+    ```
 
 ---
 
-## <img src="https://unpkg.com/boxicons@2.1.4/svg/regular/bx-group.svg" width="24" height="24" style="vertical-align: middle;"> Equipo de Desarrollo
+## 👥 Equipo de Desarrollo
 
 | Nombre | Rol | GitHub |
 | :--- | :--- | :--- |
