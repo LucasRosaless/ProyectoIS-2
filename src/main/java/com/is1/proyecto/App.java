@@ -488,6 +488,7 @@ public class App {
                     map.put("nombre", p.get("nombre"));
                     map.put("apellido", p.get("apellido"));
                     map.put("correo", p.get("correo"));
+                    map.put("user_login", p.get("user_login"));
                 }
                 lista.add(map);
             }
@@ -513,6 +514,9 @@ public class App {
             try {
                 Base.openTransaction();
                 String dni = req.queryParams("dni");
+                String userLogin = req.queryParams("user_login");
+                String passLogin = req.queryParams("pass_login");
+
                 Persona p = (Persona) Persona.findFirst("dni = ?", dni);
                 boolean isNewPersona = false;
                 if (p == null) {
@@ -523,6 +527,8 @@ public class App {
                 p.set("nombre", req.queryParams("nombre"));
                 p.set("apellido", req.queryParams("apellido"));
                 p.set("correo", req.queryParams("correo"));
+                p.set("user_login", userLogin);
+                p.set("pass_login", passLogin);
                 if (isNewPersona) {
                     p.insert();
                 } else {
@@ -538,6 +544,19 @@ public class App {
                     alu.set("id_plan", Integer.parseInt(idPlanParam));
                 }
                 alu.insert();
+
+                // Crear usuario de acceso al sistema
+                if (userLogin != null && !userLogin.isEmpty() && passLogin != null && !passLogin.isEmpty()) {
+                    User existingUser = (User) User.findFirst("name = ?", userLogin);
+                    if (existingUser == null) {
+                        User newUser = new User();
+                        newUser.set("name", userLogin);
+                        newUser.set("password", BCrypt.hashpw(passLogin, BCrypt.gensalt()));
+                        newUser.set("tipo_usuario", "alumno");
+                        newUser.saveIt();
+                    }
+                }
+
                 Base.commitTransaction();
                 res.redirect("/alumnos");
             } catch (Exception e) {
@@ -578,6 +597,9 @@ public class App {
                 Base.openTransaction();
                 Alumno alu = (Alumno) Alumno.findFirst("legajo = ?", req.params(":id"));
                 if (alu != null) {
+                    String userLogin = req.queryParams("user_login");
+                    String passLogin = req.queryParams("pass_login");
+
                     alu.set("tipo_alumno", req.queryParams("tipo_alumno"));
                     String idPlanParam = req.queryParams("id_plan");
                     if (idPlanParam != null && !idPlanParam.isEmpty()) {
@@ -586,16 +608,43 @@ public class App {
                     alu.saveIt();
                     Persona p = (Persona) Persona.findFirst("dni = ?", alu.get("dni_persona"));
                     if (p != null) {
+                        String oldUserLogin = p.getString("user_login");
                         p.set("nombre", req.queryParams("nombre"));
                         p.set("apellido", req.queryParams("apellido"));
                         p.set("correo", req.queryParams("correo"));
+                        p.set("user_login", userLogin);
+                        if (passLogin != null && !passLogin.isEmpty()) {
+                            p.set("pass_login", passLogin);
+                        }
                         p.saveIt();
+
+                        // Actualizar o crear usuario de acceso
+                        if (userLogin != null && !userLogin.isEmpty()) {
+                            User user = (User) User.findFirst("name = ?", oldUserLogin != null ? oldUserLogin : userLogin);
+                            if (user != null) {
+                                user.set("name", userLogin);
+                                if (passLogin != null && !passLogin.isEmpty()) {
+                                    user.set("password", BCrypt.hashpw(passLogin, BCrypt.gensalt()));
+                                }
+                                user.saveIt();
+                            } else {
+                                // Crear usuario si no existía
+                                if (passLogin != null && !passLogin.isEmpty()) {
+                                    User newUser = new User();
+                                    newUser.set("name", userLogin);
+                                    newUser.set("password", BCrypt.hashpw(passLogin, BCrypt.gensalt()));
+                                    newUser.set("tipo_usuario", "alumno");
+                                    newUser.saveIt();
+                                }
+                            }
+                        }
                     }
                 }
                 Base.commitTransaction();
                 res.redirect("/alumnos");
             } catch (Exception e) {
                 Base.rollbackTransaction();
+                e.printStackTrace();
                 res.redirect("/alumnos");
             }
             return "";
@@ -728,7 +777,11 @@ public class App {
                 model.put("plan", p.toMap());
             List<Map<String, Object>> lista = new ArrayList<>();
             for (Model c : Carrera.findAll()) {
-                lista.add(c.toMap());
+                Map<String, Object> cMap = new HashMap<>(c.toMap());
+                if (p != null && c.get("id_carrera") != null && c.get("id_carrera").equals(p.get("id_carrera"))) {
+                    cMap.put("selected", true);
+                }
+                lista.add(cMap);
             }
             model.put("carreras", lista);
             return new ModelAndView(model, "plan_form.mustache");

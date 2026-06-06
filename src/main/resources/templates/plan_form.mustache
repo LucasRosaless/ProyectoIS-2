@@ -50,7 +50,7 @@
                     <select name="id_carrera" required>
                         <option value="">Seleccione una carrera...</option>
                         {{#carreras}}
-                        <option value="{{id_carrera}}" >{{nombre}} (ID: {{id_carrera}})</option>
+                        <option value="{{id_carrera}}" {{#selected}}selected{{/selected}}>{{nombre}} (ID: {{id_carrera}})</option>
                         {{/carreras}}
                     </select>
                 </div>

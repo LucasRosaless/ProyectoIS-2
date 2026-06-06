@@ -18,6 +18,7 @@ DROP TABLE IF EXISTS TipoNota;
 DROP TABLE IF EXISTS PeriodoAcademico;
 DROP TABLE IF EXISTS EstadoInscripcion;
 DROP TABLE IF EXISTS TipoAlumno;
+DROP TABLE IF EXISTS users;
 
 -- Creación de Tablas de Referencia (Enumeraciones)
 CREATE TABLE TipoAlumno (
@@ -135,4 +136,11 @@ CREATE TABLE Asignacion_Docente (
     rol VARCHAR(20) REFERENCES TipoProfesor(tipo),
     fecha_asignacion INT,
     PRIMARY KEY (legajo_docente, id_catedra)
+);
+
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    tipo_usuario TEXT
 );

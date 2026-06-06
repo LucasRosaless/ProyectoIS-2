@@ -57,6 +57,14 @@
                     <input type="email" name="correo" value="{{#persona}}{{correo}}{{/persona}}" required>
                 </div>
                 <div class="form-group">
+                    <label>Usuario de Acceso</label>
+                    <input type="text" name="user_login" value="{{#persona}}{{user_login}}{{/persona}}" required placeholder="Usuario para ingresar al sistema">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña{{#alumno}} (dejar vacío para no cambiar){{/alumno}}</label>
+                    <input type="password" name="pass_login" {{^alumno}}required{{/alumno}} placeholder="{{#alumno}}Nueva contraseña (opcional){{/alumno}}{{^alumno}}Contraseña de acceso{{/alumno}}">
+                </div>
+                <div class="form-group">
                     <label>Plan de Estudio</label>
                     <select name="id_plan" required>
                         <option value="">-- Seleccione un plan --</option>
