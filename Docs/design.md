@@ -19,7 +19,7 @@ El sistema sigue un patrón de **Arquitectura en Capas (Layered Architecture)** 
 A continuación se presenta el modelo de dominio detallado, representando las entidades principales y sus relaciones dentro del sistema académico.
 
 <p align="center">
-<img width="764" height="634" alt="image" src="[https://github.com/user-attachments/assets/69570b4d-25e5-4a31-a5ef-be8fa976800a](https://github.com/LucasRosaless/ProyectoIS-2/blob/main/Docs/diagrama_UML_isii_w.drawio%20-%20copia.svg" /></p>
+<img width="764" height="634" alt="image" src="https://github.com/LucasRosaless/ProyectoIS-2/blob/main/Docs/diagrama_UML_isii_w.drawio%20-%20copia.svg" /></p>
 
 ---
 
