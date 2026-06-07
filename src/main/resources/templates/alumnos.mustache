@@ -32,41 +32,41 @@
             </div>
 
             <!-- Tabla de alumnos con iconos en las acciones -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>Legajo</th>
-                        <th>DNI</th>
-                        <th>Nombre</th>
-                        <th>Apellido</th>
-                        <th>Correo</th>
-                        <th>Usuario</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#alumnos}}
-                    <tr>
-                        <td>{{legajo}}</td>
-                        <td>{{dni_persona}}</td>
-                        <td>{{nombre}}</td>
-                        <td>{{apellido}}</td>
-                        <td>{{correo}}</td>
-                        <td>{{user_login}}</td>
-                        <td class="actions">
-                            <a href="/alumnos/{{legajo}}/edit" class="btn btn-secondary">
-                                <i class='bx bx-edit-alt'></i> Editar
-                            </a>
-                            <form action="/alumnos/{{legajo}}/delete" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que desea eliminar a este alumno?');">
-                                    <i class='bx bx-trash'></i> Borrar
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {{/alumnos}}
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Legajo</th>
+                            <th>DNI</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Correo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#alumnos}}
+                        <tr>
+                            <td>{{legajo}}</td>
+                            <td>{{dni_persona}}</td>
+                            <td>{{nombre}}</td>
+                            <td>{{apellido}}</td>
+                            <td>{{correo}}</td>
+                            <td class="actions">
+                                <a href="/alumnos/{{legajo}}/edit" class="btn btn-secondary">
+                                    <i class='bx bx-edit-alt'></i> Editar
+                                </a>
+                                <form action="/alumnos/{{legajo}}/delete" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que desea eliminar a este alumno?');">
+                                        <i class='bx bx-trash'></i> Borrar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {{/alumnos}}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </body>

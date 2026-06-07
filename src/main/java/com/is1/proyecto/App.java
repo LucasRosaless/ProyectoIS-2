@@ -44,8 +44,16 @@ public class App {
     // Se inicializa una sola vez para ser reutilizada en toda la aplicación.
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    private static String encode(String value) {
+        try {
+            return java.net.URLEncoder.encode(value, "UTF-8");
+        } catch (Exception e) {
+            return value;
+        }
+    }
+
     /**
-     * Método principal que se ejecuta al iniciar la aplicación. Aquí se
+     * Método principaor l que se ejecuta al iniciar la aplicación. Aquí se
      * configuran todas las rutas y filtros de Spark.
      */
     public static void main(String[] args) {
@@ -144,6 +152,7 @@ public class App {
 
             if (currentUsername == null || loggedIn == null || !loggedIn || !"administrador".equals(tipoUsuario)) {
                 res.redirect("/?error=Acceso no autorizado.");
+                halt();
                 return null;
             }
 
@@ -159,6 +168,7 @@ public class App {
 
             if (currentUsername == null || loggedIn == null || !loggedIn || !"profesor".equals(tipoUsuario)) {
                 res.redirect("/?error=Acceso no autorizado.");
+                halt();
                 return null;
             }
 
@@ -174,6 +184,7 @@ public class App {
 
             if (currentUsername == null || loggedIn == null || !loggedIn || "administrador".equals(tipoUsuario) || "profesor".equals(tipoUsuario)) {
                 res.redirect("/?error=Acceso no autorizado.");
+                halt();
                 return null;
             }
 
@@ -204,6 +215,7 @@ public class App {
             // 1. Verificar si el usuario ha iniciado sesión.
             if (currentUsername == null || loggedIn == null || !loggedIn) {
                 res.redirect("/?error=Debes iniciar sesión para acceder a esta página.");
+                halt();
                 return null;
             }
 
@@ -271,7 +283,6 @@ public class App {
         }, new MustacheTemplateEngine()); // Especifica el motor de plantillas para esta ruta.
 
 
-        // --- Rutas POST para manejar envíos de formularios y APIs ---
         // POST: Maneja el envío del formulario de creación de nueva cuenta.
         post("/user/new", (req, res) -> {
             String name = req.queryParams("name");
@@ -282,11 +293,13 @@ public class App {
             if (name == null || name.isEmpty() || password == null || password.isEmpty() || tipo_usuario == null || tipo_usuario.isEmpty()) {
                 res.status(400); // Código de estado HTTP 400 (Bad Request).
                 // Redirige al formulario de creación con un mensaje de error.
-                res.redirect("/user/create?error=Nombre y contraseña son requeridos.");
+                res.redirect("/user/create?error=" + encode("Nombre y contraseña son requeridos."));
                 return ""; // Retorna una cadena vacía ya que la respuesta ya fue redirigida.
             }
 
             try {
+                Base.openTransaction();
+
                 // Intenta crear y guardar la nueva cuenta en la base de datos.
                 User ac = new User(); // Crea una nueva instancia del modelo User.
                 // Hashea la contraseña de forma segura antes de guardarla.
@@ -297,19 +310,65 @@ public class App {
                 ac.set("tipo_usuario", tipo_usuario);
                 ac.saveIt(); // Guarda el nuevo usuario en la tabla 'users'.
 
+                // Obtener ID generado para construir datos únicos
+                Object userIdObj = ac.getId();
+                String userIdStr = userIdObj != null ? userIdObj.toString() : String.valueOf(System.currentTimeMillis() % 10000);
+                String dummyDniStr = "DNI" + userIdStr;
+
+                // Crear Persona vinculada
+                Persona p = new Persona();
+                p.set("dni", dummyDniStr);
+                p.set("nombre", name);
+                p.set("apellido", "Registrado");
+                p.set("correo", name + "@universidad.edu.ar");
+                p.set("user_login", name);
+                p.set("pass_login", password);
+                p.insert();
+
+                // Crear registro según tipo de usuario para aparecer en listados ABM
+                if ("profesor".equals(tipo_usuario)) {
+                    Profesor prof = new Profesor();
+                    prof.set("legajo_docente", "PROF" + String.format("%03d", Integer.parseInt(userIdStr)));
+                    prof.set("dni_persona", dummyDniStr);
+                    prof.insert();
+                } else if ("alumno".equals(tipo_usuario)) {
+                    Alumno alu = new Alumno();
+                    int legajo = 20000 + Integer.parseInt(userIdStr);
+                    alu.set("legajo", legajo);
+                    alu.set("dni_persona", dummyDniStr);
+                    alu.set("tipo_alumno", "INGRESANTE");
+                    
+                    // Buscar primer plan disponible en la base de datos
+                    PlanEstudio plan = (PlanEstudio) PlanEstudio.findFirst("1=1");
+                    if (plan != null) {
+                        alu.set("id_plan", plan.getId());
+                    } else {
+                        alu.set("id_plan", 1);
+                    }
+                    alu.insert();
+                } else if ("administrador".equals(tipo_usuario)) {
+                    com.is1.proyecto.models.Administrador adm = new com.is1.proyecto.models.Administrador();
+                    adm.set("dni_persona", dummyDniStr);
+                    adm.set("cargo_administrative", "Administrador Registrado");
+                    adm.insert();
+                }
+
+                Base.commitTransaction();
+
                 res.status(201); // Código de estado HTTP 201 (Created) para una creación exitosa.
                 // Redirige al formulario de creación con un mensaje de éxito.
-                res.redirect("/user/create?message=Cuenta creada exitosamente para " + name + "!");
+                res.redirect("/user/create?message=" + encode("Cuenta creada exitosamente para " + name + "!"));
                 return ""; // Retorna una cadena vacía.
 
             } catch (Exception e) {
+                Base.rollbackTransaction();
                 // Si ocurre cualquier error durante la operación de DB (ej. nombre de usuario
                 // duplicado),
                 // se captura aquí y se redirige con un mensaje de error.
                 System.err.println("Error al registrar la cuenta: " + e.getMessage());
                 e.printStackTrace(); // Imprime el stack trace para depuración.
                 res.status(500); // Código de estado HTTP 500 (Internal Server Error).
-                res.redirect("/user/create?error=Error interno al crear la cuenta. Intente de nuevo.");
+                res.redirect("/user/create?error=" + encode("Error interno al crear la cuenta. Intente de nuevo."));
                 return ""; // Retorna una cadena vacía.
             }
         });
@@ -909,10 +968,12 @@ public class App {
             // Validar sesión de alumno
             if (currentUsername == null || loggedIn == null || !loggedIn) {
                 res.redirect("/?error=Debes iniciar sesión para acceder a esta página.");
+                halt();
                 return null;
             }
             if ("administrador".equals(tipoUsuario) || "profesor".equals(tipoUsuario)) {
                 res.redirect("/?error=Acceso no autorizado.");
+                halt();
                 return null;
             }
 
@@ -988,6 +1049,13 @@ public class App {
                         yaInscripto = true;
                         if ("APROBADA".equals(estadoActual)) {
                             aprobada = true;
+                        } else {
+                            // Si no está aprobada, verificar si tiene notas registradas
+                            boolean tieneNotas = Nota.findFirst("id_inscripcion = ?", insc.get("id_inscripcion")) != null;
+                            if (!tieneNotas) {
+                                materiaMap.put("puede_desinscribirse", true);
+                                materiaMap.put("id_inscripcion", insc.get("id_inscripcion"));
+                            }
                         }
                         break;
                     }
@@ -1065,17 +1133,17 @@ public class App {
             String tipoUsuario = req.session().attribute("tipoUsuario");
 
             if (currentUsername == null || loggedIn == null || !loggedIn) {
-                res.redirect("/?error=Debes iniciar sesión.");
+                res.redirect("/?error=" + encode("Debes iniciar sesión."));
                 return "";
             }
             if ("administrador".equals(tipoUsuario) || "profesor".equals(tipoUsuario)) {
-                res.redirect("/?error=Acceso no autorizado.");
+                res.redirect("/?error=" + encode("Acceso no autorizado."));
                 return "";
             }
 
             String idCatedraParam = req.queryParams("id_catedra");
             if (idCatedraParam == null || idCatedraParam.isEmpty()) {
-                res.redirect("/inscripcion?error=Debe seleccionar una cátedra.");
+                res.redirect("/inscripcion?error=" + encode("Debe seleccionar una cátedra."));
                 return "";
             }
 
@@ -1085,12 +1153,12 @@ public class App {
                 // Obtener el alumno desde la sesión
                 Persona persona = (Persona) Persona.findFirst("user_login = ?", currentUsername);
                 if (persona == null) {
-                    res.redirect("/inscripcion?error=No se encontraron datos personales.");
+                    res.redirect("/inscripcion?error=" + encode("No se encontraron datos personales."));
                     return "";
                 }
                 Alumno alumno = (Alumno) Alumno.findFirst("dni_persona = ?", persona.get("dni"));
                 if (alumno == null) {
-                    res.redirect("/inscripcion?error=No se encontró registro de alumno.");
+                    res.redirect("/inscripcion?error=" + encode("No se encontró registro de alumno."));
                     return "";
                 }
 
@@ -1099,7 +1167,7 @@ public class App {
                 // Obtener la cátedra y materia para validaciones
                 Catedra catedra = (Catedra) Catedra.findFirst("id_catedra = ?", idCatedra);
                 if (catedra == null) {
-                    res.redirect("/inscripcion?error=Cátedra no encontrada.");
+                    res.redirect("/inscripcion?error=" + encode("Cátedra no encontrada."));
                     return "";
                 }
                 int idMateria = catedra.getInteger("id_materia");
@@ -1111,7 +1179,7 @@ public class App {
                         "legajo_alumno = ? AND id_catedra = ? AND (estado_inscripcion = 'EN_CURSADA' OR estado_inscripcion = 'REGULAR' OR estado_inscripcion = 'APROBADA')",
                         legajoAlumno, cat.getInteger("id_catedra"));
                     if (inscExistente != null) {
-                        res.redirect("/inscripcion?error=Ya estás inscripto en esta materia (estado: " + inscExistente.getString("estado_inscripcion") + ").");
+                        res.redirect("/inscripcion?error=" + encode("Ya estás inscripto en esta materia (estado: " + inscExistente.getString("estado_inscripcion") + ")."));
                         return "";
                     }
                 }
@@ -1135,7 +1203,7 @@ public class App {
                     if (!correlativaAprobada) {
                         Materia materiaCorr = (Materia) Materia.findFirst("id_materia = ?", idCorrelativa);
                         String nombreCorr = materiaCorr != null ? materiaCorr.getString("nombre") : "Materia ID " + idCorrelativa;
-                        res.redirect("/inscripcion?error=No cumples con la correlativa: " + nombreCorr);
+                        res.redirect("/inscripcion?error=" + encode("No cumples con la correlativa: " + nombreCorr));
                         return "";
                     }
                 }
@@ -1157,12 +1225,82 @@ public class App {
                 Materia mat = (Materia) Materia.findFirst("id_materia = ?", idMateria);
                 String nombreMateria = mat != null ? mat.getString("nombre") : "la materia";
 
-                res.redirect("/inscripcion?message=¡Inscripción exitosa en " + nombreMateria + "!");
+                res.redirect("/inscripcion?message=" + encode("¡Inscripción exitosa en " + nombreMateria + "!"));
                 return "";
 
             } catch (Exception e) {
                 e.printStackTrace();
-                res.redirect("/inscripcion?error=Error al procesar la inscripción: " + e.getMessage());
+                res.redirect("/inscripcion?error=" + encode("Error al procesar la inscripción: " + e.getMessage()));
+                return "";
+            }
+        });
+
+        // POST: Cancela la inscripción de un alumno a una cátedra (desuscribirse)
+        post("/inscripcion/cancelar", (req, res) -> {
+            String currentUsername = req.session().attribute("currentUserUsername");
+            Boolean loggedIn = req.session().attribute("loggedIn");
+            String tipoUsuario = req.session().attribute("tipoUsuario");
+
+            if (currentUsername == null || loggedIn == null || !loggedIn) {
+                res.redirect("/?error=" + encode("Debes iniciar sesión."));
+                return "";
+            }
+            if ("administrador".equals(tipoUsuario) || "profesor".equals(tipoUsuario)) {
+                res.redirect("/?error=" + encode("Acceso no autorizado."));
+                return "";
+            }
+
+            String idInscripcionParam = req.queryParams("id_inscripcion");
+            if (idInscripcionParam == null || idInscripcionParam.isEmpty()) {
+                res.redirect("/inscripcion?error=" + encode("Falta el identificador de la inscripción."));
+                return "";
+            }
+
+            try {
+                int idInscripcion = Integer.parseInt(idInscripcionParam);
+
+                // Obtener el alumno desde la sesión
+                Persona persona = (Persona) Persona.findFirst("user_login = ?", currentUsername);
+                if (persona == null) {
+                    res.redirect("/inscripcion?error=" + encode("No se encontraron datos personales."));
+                    return "";
+                }
+                Alumno alumno = (Alumno) Alumno.findFirst("dni_persona = ?", persona.get("dni"));
+                if (alumno == null) {
+                    res.redirect("/inscripcion?error=" + encode("No se encontró registro de alumno."));
+                    return "";
+                }
+
+                int legajoAlumno = alumno.getInteger("legajo");
+
+                // Buscar la inscripción y validar que pertenezca al alumno logueado
+                Inscripcion insc = (Inscripcion) Inscripcion.findFirst("id_inscripcion = ?", idInscripcion);
+                if (insc == null) {
+                    res.redirect("/inscripcion?error=" + encode("Inscripción no encontrada."));
+                    return "";
+                }
+
+                if (insc.getInteger("legajo_alumno") != legajoAlumno) {
+                    res.redirect("/inscripcion?error=" + encode("No tienes permisos para cancelar esta inscripción."));
+                    return "";
+                }
+
+                // VALIDACIÓN: Verificar si tiene notas registradas
+                boolean tieneNotas = Nota.findFirst("id_inscripcion = ?", idInscripcion) != null;
+                if (tieneNotas) {
+                    res.redirect("/inscripcion?error=" + encode("No puedes desinscribirte porque ya tienes notas registradas en esta materia."));
+                    return "";
+                }
+
+                // Eliminar la inscripción
+                insc.delete();
+
+                res.redirect("/inscripcion?message=" + encode("Te has desinscripto de la materia exitosamente."));
+                return "";
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                res.redirect("/inscripcion?error=" + encode("Error al procesar la desuscripción: " + e.getMessage()));
                 return "";
             }
         });
@@ -1178,10 +1316,12 @@ public class App {
             // Validar sesión de alumno
             if (currentUsername == null || loggedIn == null || !loggedIn) {
                 res.redirect("/?error=Debes iniciar sesión para acceder a esta página.");
+                halt();
                 return null;
             }
             if ("administrador".equals(tipoUsuario) || "profesor".equals(tipoUsuario)) {
                 res.redirect("/?error=Acceso no autorizado.");
+                halt();
                 return null;
             }
 
@@ -1263,17 +1403,17 @@ public class App {
             String tipoUsuario = req.session().attribute("tipoUsuario");
 
             if (currentUsername == null || loggedIn == null || !loggedIn) {
-                res.redirect("/?error=Debes iniciar sesión.");
+                res.redirect("/?error=" + encode("Debes iniciar sesión."));
                 return "";
             }
             if ("administrador".equals(tipoUsuario) || "profesor".equals(tipoUsuario)) {
-                res.redirect("/?error=Acceso no autorizado.");
+                res.redirect("/?error=" + encode("Acceso no autorizado."));
                 return "";
             }
 
             String idCarreraParam = req.queryParams("id_carrera");
             if (idCarreraParam == null || idCarreraParam.isEmpty()) {
-                res.redirect("/mis-carreras?error=Debe seleccionar una carrera.");
+                res.redirect("/mis-carreras?error=" + encode("Debe seleccionar una carrera."));
                 return "";
             }
 
@@ -1283,19 +1423,19 @@ public class App {
                 // Obtener el alumno
                 Persona persona = (Persona) Persona.findFirst("user_login = ?", currentUsername);
                 if (persona == null) {
-                    res.redirect("/mis-carreras?error=No se encontraron datos personales.");
+                    res.redirect("/mis-carreras?error=" + encode("No se encontraron datos personales."));
                     return "";
                 }
                 Alumno alumno = (Alumno) Alumno.findFirst("dni_persona = ?", persona.get("dni"));
                 if (alumno == null) {
-                    res.redirect("/mis-carreras?error=No se encontró registro de alumno.");
+                    res.redirect("/mis-carreras?error=" + encode("No se encontró registro de alumno."));
                     return "";
                 }
 
                 // Verificar que la carrera exista
                 Carrera carrera = (Carrera) Carrera.findFirst("id_carrera = ?", idCarrera);
                 if (carrera == null) {
-                    res.redirect("/mis-carreras?error=Carrera no encontrada.");
+                    res.redirect("/mis-carreras?error=" + encode("Carrera no encontrada."));
                     return "";
                 }
 
@@ -1304,7 +1444,7 @@ public class App {
                 if (idPlanActual != null) {
                     PlanEstudio planActual = (PlanEstudio) PlanEstudio.findFirst("id_plan = ?", idPlanActual);
                     if (planActual != null && planActual.getInteger("id_carrera") == idCarrera) {
-                        res.redirect("/mis-carreras?error=Ya estás inscripto en esta carrera.");
+                        res.redirect("/mis-carreras?error=" + encode("Ya estás inscripto en esta carrera."));
                         return "";
                     }
                 }
@@ -1312,7 +1452,7 @@ public class App {
                 // Buscar un plan de estudio vigente de esa carrera
                 PlanEstudio planCarrera = (PlanEstudio) PlanEstudio.findFirst("id_carrera = ?", idCarrera);
                 if (planCarrera == null) {
-                    res.redirect("/mis-carreras?error=No hay planes de estudio disponibles para esta carrera. Contacta a administración.");
+                    res.redirect("/mis-carreras?error=" + encode("No hay planes de estudio disponibles para esta carrera. Contacta a administración."));
                     return "";
                 }
 
@@ -1320,12 +1460,12 @@ public class App {
                 alumno.set("id_plan", planCarrera.getInteger("id_plan"));
                 alumno.saveIt();
 
-                res.redirect("/mis-carreras?message=¡Te inscribiste exitosamente en " + carrera.getString("nombre") + "!");
+                res.redirect("/mis-carreras?message=" + encode("¡Te inscribiste exitosamente en " + carrera.getString("nombre") + "!"));
                 return "";
 
             } catch (Exception e) {
                 e.printStackTrace();
-                res.redirect("/mis-carreras?error=Error al procesar la inscripción: " + e.getMessage());
+                res.redirect("/mis-carreras?error=" + encode("Error al procesar la inscripción: " + e.getMessage()));
                 return "";
             }
         });
@@ -1350,6 +1490,7 @@ public class App {
             Profesor prof = (Profesor) Profesor.findFirst("legajo_docente = ?", legajoDocente);
             if (prof == null) {
                 res.redirect("/profesores?error=Profesor no encontrado.");
+                halt();
                 return null;
             }
 
@@ -1416,7 +1557,7 @@ public class App {
             String rol = req.queryParams("rol");
 
             if (idCatedraParam == null || idCatedraParam.isEmpty() || rol == null || rol.isEmpty()) {
-                res.redirect("/profesores/" + legajoDocente + "/materias?error=Debe seleccionar una cátedra y un rol.");
+                res.redirect("/profesores/" + legajoDocente + "/materias?error=" + encode("Debe seleccionar una cátedra y un rol."));
                 return "";
             }
 
@@ -1426,14 +1567,14 @@ public class App {
                 // Verificar que el profesor exista
                 Profesor prof = (Profesor) Profesor.findFirst("legajo_docente = ?", legajoDocente);
                 if (prof == null) {
-                    res.redirect("/profesores?error=Profesor no encontrado.");
+                    res.redirect("/profesores?error=" + encode("Profesor no encontrado."));
                     return "";
                 }
 
                 // Verificar que la cátedra exista
                 Catedra catedra = (Catedra) Catedra.findFirst("id_catedra = ?", idCatedra);
                 if (catedra == null) {
-                    res.redirect("/profesores/" + legajoDocente + "/materias?error=Cátedra no encontrada.");
+                    res.redirect("/profesores/" + legajoDocente + "/materias?error=" + encode("Cátedra no encontrada."));
                     return "";
                 }
 
@@ -1441,7 +1582,7 @@ public class App {
                 AsignacionDocente existente = (AsignacionDocente) AsignacionDocente.findFirst(
                     "legajo_docente = ? AND id_catedra = ?", legajoDocente, idCatedra);
                 if (existente != null) {
-                    res.redirect("/profesores/" + legajoDocente + "/materias?error=El profesor ya está asignado a esta cátedra.");
+                    res.redirect("/profesores/" + legajoDocente + "/materias?error=" + encode("El profesor ya está asignado a esta cátedra."));
                     return "";
                 }
 
@@ -1457,12 +1598,12 @@ public class App {
                 Materia mat = (Materia) Materia.findFirst("id_materia = ?", catedra.get("id_materia"));
                 String nombreMateria = mat != null ? mat.getString("nombre") : "la materia";
 
-                res.redirect("/profesores/" + legajoDocente + "/materias?message=¡Profesor asignado exitosamente a " + nombreMateria + " (" + rol + ")!");
+                res.redirect("/profesores/" + legajoDocente + "/materias?message=" + encode("¡Profesor asignado exitosamente a " + nombreMateria + " (" + rol + ")!"));
                 return "";
 
             } catch (Exception e) {
                 e.printStackTrace();
-                res.redirect("/profesores/" + legajoDocente + "/materias?error=Error al procesar la asignación: " + e.getMessage());
+                res.redirect("/profesores/" + legajoDocente + "/materias?error=" + encode("Error al procesar la asignación: " + e.getMessage()));
                 return "";
             }
         });
@@ -1476,10 +1617,12 @@ public class App {
 
             if (currentUsername == null || loggedIn == null || !loggedIn) {
                 res.redirect("/?error=Debes iniciar sesión para acceder a esta página.");
+                halt();
                 return null;
             }
             if ("administrador".equals(tipoUsuario) || "profesor".equals(tipoUsuario)) {
                 res.redirect("/?error=Acceso no autorizado.");
+                halt();
                 return null;
             }
 
@@ -1598,6 +1741,7 @@ public class App {
 
             if (currentUsername == null || loggedIn == null || !loggedIn || !"profesor".equals(tipoUsuario)) {
                 res.redirect("/?error=Acceso no autorizado.");
+                halt();
                 return null;
             }
 
@@ -1657,6 +1801,7 @@ public class App {
 
             if (currentUsername == null || loggedIn == null || !loggedIn || !"profesor".equals(tipoUsuario)) {
                 res.redirect("/?error=Acceso no autorizado.");
+                halt();
                 return null;
             }
 
@@ -1678,6 +1823,7 @@ public class App {
             Catedra cat = (Catedra) Catedra.findFirst("id_catedra = ?", idCatedra);
             if (cat == null) {
                 res.redirect("/profesor/materias?error=Cátedra no encontrada.");
+                halt();
                 return null;
             }
             model.put("anio", cat.get("anio"));
@@ -1750,7 +1896,7 @@ public class App {
             String idCatedraParam = req.params(":id_catedra");
 
             if (currentUsername == null || loggedIn == null || !loggedIn || !"profesor".equals(tipoUsuario)) {
-                res.redirect("/?error=Acceso no autorizado.");
+                res.redirect("/?error=" + encode("Acceso no autorizado."));
                 return "";
             }
 
@@ -1759,7 +1905,7 @@ public class App {
             String valorParam = req.queryParams("valor");
 
             if (idInscripcionParam == null || tipoNota == null || valorParam == null) {
-                res.redirect("/profesor/materias/" + idCatedraParam + "/notas?error=Faltan datos requeridos.");
+                res.redirect("/profesor/materias/" + idCatedraParam + "/notas?error=" + encode("Faltan datos requeridos."));
                 return "";
             }
 
@@ -1768,7 +1914,7 @@ public class App {
                 int valor = Integer.parseInt(valorParam);
 
                 if (valor < 1 || valor > 10) {
-                    res.redirect("/profesor/materias/" + idCatedraParam + "/notas?error=La nota debe estar entre 1 y 10.");
+                    res.redirect("/profesor/materias/" + idCatedraParam + "/notas?error=" + encode("La nota debe estar entre 1 y 10."));
                     return "";
                 }
 
@@ -1784,11 +1930,11 @@ public class App {
                 nuevaNota.set("id_inscripcion", idInscripcion);
                 nuevaNota.insert();
 
-                res.redirect("/profesor/materias/" + idCatedraParam + "/notas?message=Nota cargada con éxito.");
+                res.redirect("/profesor/materias/" + idCatedraParam + "/notas?message=" + encode("Nota cargada con éxito."));
                 return "";
             } catch (Exception e) {
                 e.printStackTrace();
-                res.redirect("/profesor/materias/" + idCatedraParam + "/notas?error=Error al cargar la nota: " + e.getMessage());
+                res.redirect("/profesor/materias/" + idCatedraParam + "/notas?error=" + encode("Error al cargar la nota: " + e.getMessage()));
                 return "";
             }
         });
@@ -1802,7 +1948,7 @@ public class App {
             String idNotaParam = req.params(":id_nota");
 
             if (currentUsername == null || loggedIn == null || !loggedIn || !"profesor".equals(tipoUsuario)) {
-                res.redirect("/?error=Acceso no autorizado.");
+                res.redirect("/?error=" + encode("Acceso no autorizado."));
                 return "";
             }
 
@@ -1811,14 +1957,14 @@ public class App {
                 Nota n = (Nota) Nota.findFirst("id_nota = ?", idNota);
                 if (n != null) {
                     n.delete();
-                    res.redirect("/profesor/materias/" + idCatedraParam + "/notas?message=Nota eliminada con éxito.");
+                    res.redirect("/profesor/materias/" + idCatedraParam + "/notas?message=" + encode("Nota eliminada con éxito."));
                 } else {
-                    res.redirect("/profesor/materias/" + idCatedraParam + "/notas?error=La nota no existe.");
+                    res.redirect("/profesor/materias/" + idCatedraParam + "/notas?error=" + encode("La nota no existe."));
                 }
                 return "";
             } catch (Exception e) {
                 e.printStackTrace();
-                res.redirect("/profesor/materias/" + idCatedraParam + "/notas?error=Error al eliminar la nota: " + e.getMessage());
+                res.redirect("/profesor/materias/" + idCatedraParam + "/notas?error=" + encode("Error al eliminar la nota: " + e.getMessage()));
                 return "";
             }
         });
@@ -1832,6 +1978,7 @@ public class App {
 
             if (currentUsername == null || loggedIn == null || !loggedIn || !"profesor".equals(tipoUsuario)) {
                 res.redirect("/?error=Acceso no autorizado.");
+                halt();
                 return null;
             }
 
@@ -2051,6 +2198,7 @@ public class App {
                     res.redirect("/dashboard-alumno");
                 }
 
+                halt();
                 return null;
 
             } else {
@@ -2100,6 +2248,33 @@ public class App {
                 res.status(500); // Internal Server Error.
                 return objectMapper
                         .writeValueAsString(Map.of("error", "Error interno al registrar usuario: " + e.getMessage()));
+            }
+        });
+
+        spark.Spark.exception(Exception.class, (exception, req, res) -> {
+            System.err.println("Excepcion capturada globalmente: " + exception.getClass().getName() + " - " + exception.getMessage());
+            exception.printStackTrace();
+
+            // Si es un error por caracteres mal formados en Query Params, redirigir al mismo path limpio
+            String exMessage = exception.getMessage();
+            if (exception.getClass().getName().contains("BadMessageException") || 
+                (exMessage != null && (exMessage.contains("Unable to parse URI query") || exMessage.contains("Not valid UTF8")))) {
+                res.redirect(req.pathInfo());
+                halt();
+                return;
+            }
+
+            res.status(500);
+            res.type("text/html");
+            Map<String, Object> model = new HashMap<>();
+            model.put("errorCode", "500");
+            model.put("errorMessage", "Error interno del servidor");
+            try {
+                res.body(new MustacheTemplateEngine().render(
+                    new ModelAndView(model, "error.mustache")
+                ));
+            } catch (Exception ex) {
+                res.body("Error interno del servidor.");
             }
         });
 

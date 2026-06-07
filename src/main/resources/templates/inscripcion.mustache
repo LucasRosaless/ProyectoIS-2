@@ -363,11 +363,19 @@
                     {{/disponible}}
 
                     {{#ya_inscripto}}
-                    <div class="catedra-section" style="border-top-color: rgba(59, 130, 246, 0.1);">
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">
-                            <i class='bx bx-check-double' style="vertical-align: middle; color: #93c5fd;"></i>
+                    <div class="catedra-section" style="border-top-color: rgba(59, 130, 246, 0.1); justify-content: space-between; flex-wrap: wrap;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <i class='bx bx-check-double' style="font-size: 1.1rem; color: #93c5fd;"></i>
                             Ya estás inscripto en esta materia.
                         </span>
+                        {{#puede_desinscribirse}}
+                        <form action="/inscripcion/cancelar" method="POST" style="margin: 0; display: inline-block;" onsubmit="return confirm('¿Estás seguro de que deseas desinscribirte de esta materia?');">
+                            <input type="hidden" name="id_inscripcion" value="{{id_inscripcion}}">
+                            <button type="submit" class="btn" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 0.4rem 1rem; font-size: 0.75rem; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <i class='bx bx-trash' style="vertical-align: middle;"></i> Desinscribirse
+                            </button>
+                        </form>
+                        {{/puede_desinscribirse}}
                     </div>
                     {{/ya_inscripto}}
 

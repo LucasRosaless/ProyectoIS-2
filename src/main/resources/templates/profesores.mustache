@@ -33,44 +33,44 @@
             </div>
 
             <!-- Tabla de profesores con iconos en las acciones -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>Legajo</th>
-                        <th>DNI</th>
-                        <th>Nombre</th>
-                        <th>Apellido</th>
-                        <th>Correo</th>
-                        <th>Usuario</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#profesores}}
-                    <tr>
-                        <td>{{legajo_docente}}</td>
-                        <td>{{dni_persona}}</td>
-                        <td>{{nombre}}</td>
-                        <td>{{apellido}}</td>
-                        <td>{{correo}}</td>
-                        <td>{{user_login}}</td>
-                        <td class="actions">
-                            <a href="/profesores/{{legajo_docente}}/edit" class="btn btn-secondary">
-                                <i class='bx bx-edit-alt'></i> Editar
-                            </a>
-                            <a href="/profesores/{{legajo_docente}}/materias" class="btn btn-primary">
-                                <i class='bx bx-book-reader'></i> Materias
-                            </a>
-                            <form action="/profesores/{{legajo_docente}}/delete" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que desea eliminar a este profesor?');">
-                                    <i class='bx bx-trash'></i> Borrar
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {{/profesores}}
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Legajo</th>
+                            <th>DNI</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Correo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#profesores}}
+                        <tr>
+                            <td>{{legajo_docente}}</td>
+                            <td>{{dni_persona}}</td>
+                            <td>{{nombre}}</td>
+                            <td>{{apellido}}</td>
+                            <td>{{correo}}</td>
+                            <td class="actions">
+                                <a href="/profesores/{{legajo_docente}}/edit" class="btn btn-secondary">
+                                    <i class='bx bx-edit-alt'></i> Editar
+                                </a>
+                                <a href="/profesores/{{legajo_docente}}/materias" class="btn btn-primary">
+                                    <i class='bx bx-book-reader'></i> Materias
+                                </a>
+                                <form action="/profesores/{{legajo_docente}}/delete" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que desea eliminar a este profesor?');">
+                                        <i class='bx bx-trash'></i> Borrar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {{/profesores}}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </body>

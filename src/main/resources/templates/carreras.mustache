@@ -32,37 +32,39 @@
             </div>
 
             <!-- Tabla de carreras con iconos en las acciones -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID Carrera</th>
-                        <th>Código</th>
-                        <th>Nombre</th>
-                        <th>Duración (Años)</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#carreras}}
-                    <tr>
-                        <td>{{id_carrera}}</td>
-                        <td>{{codigo}}</td>
-                        <td>{{nombre}}</td>
-                        <td>{{duracion_anios}}</td>
-                        <td class="actions">
-                            <a href="/carreras/{{id_carrera}}/edit" class="btn btn-secondary">
-                                <i class='bx bx-edit-alt'></i> Editar
-                            </a>
-                            <form action="/carreras/{{id_carrera}}/delete" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que desea eliminar esta carrera?');">
-                                    <i class='bx bx-trash'></i> Borrar
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {{/carreras}}
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Carrera</th>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Duración (Años)</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#carreras}}
+                        <tr>
+                            <td>{{id_carrera}}</td>
+                            <td>{{codigo}}</td>
+                            <td>{{nombre}}</td>
+                            <td>{{duracion_anios}}</td>
+                            <td class="actions">
+                                <a href="/carreras/{{id_carrera}}/edit" class="btn btn-secondary">
+                                    <i class='bx bx-edit-alt'></i> Editar
+                                </a>
+                                <form action="/carreras/{{id_carrera}}/delete" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que desea eliminar esta carrera?');">
+                                        <i class='bx bx-trash'></i> Borrar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {{/carreras}}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </body>
