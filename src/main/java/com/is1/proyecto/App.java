@@ -1981,8 +1981,8 @@ public class App {
                         alumMap.put("promedio_raw", promedio);
                         alumMap.put("tiene_notas", gradesCount > 0);
 
-                        // Determinar riesgo (Promedio < 4 o estado LIBRE)
-                        boolean alRiesgo = "LIBRE".equals(estado) || (gradesCount > 0 && promedio < 4.0);
+                        // Determinar riesgo (Promedio < 5 o estado LIBRE)
+                        boolean alRiesgo = "LIBRE".equals(estado) || (gradesCount > 0 && promedio < 5.0);
                         alumMap.put("al_riesgo", alRiesgo);
 
                         alumnosInscriptos.add(alumMap);
