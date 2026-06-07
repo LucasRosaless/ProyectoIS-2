@@ -408,4 +408,141 @@ class ComprehensiveWorkflowTest {
         double promedio = sum / notasFinales.size();
         assertEquals(9.0, promedio, 0.01, "El promedio de notas finales debería ser 9.0");
     }
+
+    @Test
+    void testProfessorStudentTracking() {
+        // --- 1. SETUP PROFESSOR ---
+        String dniProf = "99444111";
+        Persona persProf = new Persona();
+        persProf.set("dni", dniProf);
+        persProf.set("nombre", "Marie");
+        persProf.set("apellido", "Curie");
+        persProf.set("user_login", "marie_curie");
+        persProf.insert();
+
+        String legajoDocente = "PROF_CURIE_99";
+        Profesor prof = new Profesor();
+        prof.set("legajo_docente", legajoDocente);
+        prof.set("dni_persona", dniProf);
+        prof.insert();
+
+        // --- 2. SETUP CATEDRA AND MATERIA ---
+        int idMateria = 9930;
+        Materia mat = new Materia();
+        mat.set("id_materia", idMateria);
+        mat.set("codigo", "CHEM101");
+        mat.set("nombre", "Química General");
+        mat.set("periodo", "CUATRIMESTRAL");
+        mat.set("id_plan", 1);
+        mat.insert();
+
+        int idCatedra = 9931;
+        Catedra cat = new Catedra();
+        cat.set("id_catedra", idCatedra);
+        cat.set("anio", 2026);
+        cat.set("comision", 1);
+        cat.set("id_materia", idMateria);
+        cat.insert();
+
+        // Assign professor to catedra
+        AsignacionDocente asig = new AsignacionDocente();
+        asig.set("legajo_docente", legajoDocente);
+        asig.set("id_catedra", idCatedra);
+        asig.set("rol", "RESPONSABLE");
+        asig.set("fecha_asignacion", (int)(System.currentTimeMillis() / 1000));
+        asig.insert();
+
+        // --- 3. SETUP STUDENTS ENROLLED ---
+        // Student 1 (At risk: Libre)
+        String dniAlu1 = "99888111";
+        Persona persAlu1 = new Persona();
+        persAlu1.set("dni", dniAlu1);
+        persAlu1.set("nombre", "Pierre");
+        persAlu1.set("apellido", "Curie");
+        persAlu1.insert();
+
+        int legajoAlu1 = 99771;
+        Alumno alu1 = new Alumno();
+        alu1.set("legajo", legajoAlu1);
+        alu1.set("dni_persona", dniAlu1);
+        alu1.set("tipo_alumno", "INGRESANTE");
+        alu1.set("id_plan", 1);
+        alu1.insert();
+
+        int idInsc1 = 99401;
+        Inscripcion insc1 = new Inscripcion();
+        insc1.set("id_inscripcion", idInsc1);
+        insc1.set("fecha_inscripcion", (int)(System.currentTimeMillis() / 1000));
+        insc1.set("estado_inscripcion", "LIBRE");
+        insc1.set("legajo_alumno", legajoAlu1);
+        insc1.set("id_catedra", idCatedra);
+        insc1.insert();
+
+        // Student 2 (Avanzado, has grades, average >= 4.0: Safe)
+        String dniAlu2 = "99888222";
+        Persona persAlu2 = new Persona();
+        persAlu2.set("dni", dniAlu2);
+        persAlu2.set("nombre", "Irene");
+        persAlu2.set("apellido", "Joliot");
+        persAlu2.insert();
+
+        int legajoAlu2 = 99772;
+        Alumno alu2 = new Alumno();
+        alu2.set("legajo", legajoAlu2);
+        alu2.set("dni_persona", dniAlu2);
+        alu2.set("tipo_alumno", "AVANZADO");
+        alu2.set("id_plan", 1);
+        alu2.insert();
+
+        int idInsc2 = 99402;
+        Inscripcion insc2 = new Inscripcion();
+        insc2.set("id_inscripcion", idInsc2);
+        insc2.set("fecha_inscripcion", (int)(System.currentTimeMillis() / 1000));
+        insc2.set("estado_inscripcion", "EN_CURSADA");
+        insc2.set("legajo_alumno", legajoAlu2);
+        insc2.set("id_catedra", idCatedra);
+        insc2.insert();
+
+        // Add note to Student 2
+        Nota nota1 = new Nota();
+        nota1.set("id_nota", 99411);
+        nota1.set("valor", 8);
+        nota1.set("tipo_nota", "PARCIAL");
+        nota1.set("fecha", (int)(System.currentTimeMillis() / 1000));
+        nota1.set("id_inscripcion", idInsc2);
+        nota1.insert();
+
+        // --- 4. VERIFY LOGIC THAT /profesor/alumnos ENDPOINT USES ---
+        // Fetch professor
+        Persona p = (Persona) Persona.findFirst("user_login = ?", "marie_curie");
+        assertNotNull(p);
+        Profesor profObj = (Profesor) Profesor.findFirst("dni_persona = ?", p.get("dni"));
+        assertNotNull(profObj);
+        assertEquals(legajoDocente, profObj.get("legajo_docente"));
+
+        // Fetch assigned classes
+        List<Model> asignaciones = AsignacionDocente.find("legajo_docente = ?", legajoDocente);
+        assertEquals(1, asignaciones.size());
+        assertEquals(idCatedra, asignaciones.get(0).getInteger("id_catedra"));
+
+        // Fetch enrolled students
+        List<Model> inscripciones = Inscripcion.find("id_catedra = ?", idCatedra);
+        assertEquals(2, inscripciones.size());
+
+        // Verify Student 1 (Libre -> risk)
+        Inscripcion checkInsc1 = (Inscripcion) Inscripcion.findFirst("id_inscripcion = ?", idInsc1);
+        assertEquals("LIBRE", checkInsc1.getEstadoInscripcion());
+        boolean isRisk1 = "LIBRE".equals(checkInsc1.getEstadoInscripcion());
+        assertTrue(isRisk1);
+
+        // Verify Student 2 (En Cursada, avg 8 -> safe)
+        Inscripcion checkInsc2 = (Inscripcion) Inscripcion.findFirst("id_inscripcion = ?", idInsc2);
+        List<Model> notasAlu2 = Nota.find("id_inscripcion = ?", idInsc2);
+        assertEquals(1, notasAlu2.size());
+        int valorNota = notasAlu2.get(0).getInteger("valor");
+        assertEquals(8, valorNota);
+        double promedio2 = (double) valorNota / notasAlu2.size();
+        boolean isRisk2 = "LIBRE".equals(checkInsc2.getEstadoInscripcion()) || promedio2 < 4.0;
+        assertFalse(isRisk2);
+    }
 }

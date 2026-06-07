@@ -1823,6 +1823,178 @@ public class App {
             }
         });
 
+        // GET: Muestra la lista integral de alumnos inscriptos en todas las cátedras del profesor
+        get("/profesor/alumnos", (req, res) -> {
+            Map<String, Object> model = new HashMap<>();
+            String currentUsername = req.session().attribute("currentUserUsername");
+            Boolean loggedIn = req.session().attribute("loggedIn");
+            String tipoUsuario = req.session().attribute("tipoUsuario");
+
+            if (currentUsername == null || loggedIn == null || !loggedIn || !"profesor".equals(tipoUsuario)) {
+                res.redirect("/?error=Acceso no autorizado.");
+                return null;
+            }
+
+            model.put("username", currentUsername);
+
+            Persona p = (Persona) Persona.findFirst("user_login = ?", currentUsername);
+            if (p == null) {
+                model.put("errorMessage", "No se encontraron datos personales vinculados a tu usuario.");
+                return new ModelAndView(model, "profesor_alumnos_list.mustache");
+            }
+
+            Profesor prof = (Profesor) Profesor.findFirst("dni_persona = ?", p.get("dni"));
+            if (prof == null) {
+                model.put("errorMessage", "No se encontró un registro de profesor asociado a tu cuenta.");
+                return new ModelAndView(model, "profesor_alumnos_list.mustache");
+            }
+
+            String legajoDocente = prof.getString("legajo_docente");
+            model.put("legajo_docente", legajoDocente);
+
+            // Buscar cátedras asignadas a este profesor
+            List<Model> asignaciones = AsignacionDocente.find("legajo_docente = ?", legajoDocente);
+            List<Map<String, Object>> catedrasList = new ArrayList<>();
+            List<Integer> idCatedras = new ArrayList<>();
+
+            for (Model asig : asignaciones) {
+                int idCatedra = asig.getInteger("id_catedra");
+                Catedra cat = (Catedra) Catedra.findFirst("id_catedra = ?", idCatedra);
+                if (cat != null) {
+                    Map<String, Object> catMap = new HashMap<>();
+                    catMap.put("id_catedra", idCatedra);
+                    catMap.put("comision", cat.get("comision"));
+                    catMap.put("anio", cat.get("anio"));
+                    
+                    Materia mat = (Materia) Materia.findFirst("id_materia = ?", cat.get("id_materia"));
+                    String materiaNombre = mat != null ? mat.getString("nombre") : "Sin Nombre";
+                    catMap.put("materia_nombre", materiaNombre);
+                    catedrasList.add(catMap);
+                    idCatedras.add(idCatedra);
+                }
+            }
+            model.put("catedras", catedrasList);
+
+            // Buscar alumnos inscriptos en todas estas cátedras
+            List<Map<String, Object>> alumnosInscriptos = new ArrayList<>();
+            if (!idCatedras.isEmpty()) {
+                for (int idCatedra : idCatedras) {
+                    Catedra cat = (Catedra) Catedra.findFirst("id_catedra = ?", idCatedra);
+                    if (cat == null) continue;
+                    Materia mat = (Materia) Materia.findFirst("id_materia = ?", cat.get("id_materia"));
+                    String materiaNombre = mat != null ? mat.getString("nombre") : "Sin Nombre";
+
+                    List<Model> inscripciones = Inscripcion.find("id_catedra = ?", idCatedra);
+                    for (Model ins : inscripciones) {
+                        Map<String, Object> alumMap = new HashMap<>();
+                        int idInscripcion = ins.getInteger("id_inscripcion");
+                        String estado = ins.getString("estado_inscripcion");
+                        alumMap.put("id_inscripcion", idInscripcion);
+                        alumMap.put("estado_inscripcion", estado);
+                        alumMap.put("id_catedra", idCatedra);
+                        alumMap.put("materia_nombre", materiaNombre);
+                        alumMap.put("comision", cat.get("comision"));
+                        alumMap.put("anio", cat.get("anio"));
+
+                        int legajo = ins.getInteger("legajo_alumno");
+                        alumMap.put("legajo", legajo);
+
+                        // Datos del Alumno y su Persona
+                        Alumno alum = (Alumno) Alumno.findFirst("legajo = ?", legajo);
+                        if (alum != null) {
+                            alumMap.put("tipo_alumno", alum.get("tipo_alumno"));
+                            Persona pers = (Persona) Persona.findFirst("dni = ?", alum.get("dni_persona"));
+                            if (pers != null) {
+                                alumMap.put("nombre", pers.getString("nombre"));
+                                alumMap.put("apellido", pers.getString("apellido"));
+                                alumMap.put("dni", pers.getString("dni"));
+                                alumMap.put("correo", pers.getString("correo"));
+                                alumMap.put("telefono", pers.getString("telefono"));
+                            } else {
+                                alumMap.put("nombre", "Sin");
+                                alumMap.put("apellido", "Nombre");
+                                alumMap.put("dni", "-");
+                                alumMap.put("correo", "-");
+                                alumMap.put("telefono", "-");
+                            }
+
+                            // Carrera y Plan de estudio
+                            Integer idPlan = alum.getInteger("id_plan");
+                            if (idPlan != null) {
+                                PlanEstudio plan = (PlanEstudio) PlanEstudio.findFirst("id_plan = ?", idPlan);
+                                if (plan != null) {
+                                    alumMap.put("plan_resolucion", plan.getString("resolucion"));
+                                    Carrera carrera = (Carrera) Carrera.findFirst("id_carrera = ?", plan.get("id_carrera"));
+                                    alumMap.put("carrera_nombre", carrera != null ? carrera.getString("nombre") : "Sin Carrera");
+                                } else {
+                                    alumMap.put("plan_resolucion", "-");
+                                    alumMap.put("carrera_nombre", "Sin Carrera");
+                                }
+                            } else {
+                                alumMap.put("plan_resolucion", "-");
+                                alumMap.put("carrera_nombre", "Sin Carrera");
+                            }
+                        } else {
+                            alumMap.put("nombre", "Sin");
+                            alumMap.put("apellido", "Alumno");
+                            alumMap.put("tipo_alumno", "AVANZADO");
+                            alumMap.put("dni", "-");
+                            alumMap.put("correo", "-");
+                            alumMap.put("telefono", "-");
+                            alumMap.put("plan_resolucion", "-");
+                            alumMap.put("carrera_nombre", "Sin Carrera");
+                        }
+
+                        // Notas asociadas a esta inscripción
+                        List<Model> notasList = Nota.find("id_inscripcion = ?", idInscripcion);
+                        List<Map<String, Object>> notasMapList = new ArrayList<>();
+                        double sumGrades = 0;
+                        int gradesCount = 0;
+
+                        for (Model n : notasList) {
+                            Map<String, Object> notaMap = new HashMap<>();
+                            int valor = n.getInteger("valor");
+                            notaMap.put("valor", valor);
+                            String tipo = n.getString("tipo_nota");
+                            notaMap.put("tipo_nota", tipo);
+                            
+                            if ("PARCIAL".equalsIgnoreCase(tipo)) {
+                                notaMap.put("tipo_css", "parcial");
+                            } else if ("TP".equalsIgnoreCase(tipo)) {
+                                notaMap.put("tipo_css", "tp");
+                            } else {
+                                notaMap.put("tipo_css", "final");
+                            }
+                            
+                            notasMapList.add(notaMap);
+                            sumGrades += valor;
+                            gradesCount++;
+                        }
+                        alumMap.put("notas", notasMapList);
+
+                        // Calcular promedio
+                        double promedio = 0.0;
+                        if (gradesCount > 0) {
+                            promedio = sumGrades / gradesCount;
+                        }
+                        alumMap.put("promedio", String.format(java.util.Locale.US, "%.2f", promedio));
+                        alumMap.put("promedio_raw", promedio);
+                        alumMap.put("tiene_notas", gradesCount > 0);
+
+                        // Determinar riesgo (Promedio < 4 o estado LIBRE)
+                        boolean alRiesgo = "LIBRE".equals(estado) || (gradesCount > 0 && promedio < 4.0);
+                        alumMap.put("al_riesgo", alRiesgo);
+
+                        alumnosInscriptos.add(alumMap);
+                    }
+                }
+            }
+            model.put("alumnos_inscriptos", alumnosInscriptos);
+            model.put("tiene_alumnos", !alumnosInscriptos.isEmpty());
+
+            return new ModelAndView(model, "profesor_alumnos_list.mustache");
+        }, new MustacheTemplateEngine());
+
         // --- FIN ABM ---
         // POST: Maneja el envío del formulario de inicio de sesión.
         post("/login", (req, res) -> {

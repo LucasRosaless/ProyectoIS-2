@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento Académico - Portal Docente - MiUni</title>
+    
+    <!-- Enlace a la hoja de estilos global unificada -->
+    <link rel="stylesheet" href="/styles.css">
+    
+    <!-- Librería de Iconos Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --primary: #10b981; /* Verde Esmeralda */
+            --primary-hover: #059669;
+            --primary-glow: rgba(16, 185, 129, 0.35);
+            --primary-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            --primary-gradient-hover: linear-gradient(135deg, #047857 0%, #059669 100%);
+        }
+        
+        body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.08) 0px, transparent 50%);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(16, 185, 129, 0.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            background: rgba(16, 185, 129, 0.12);
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .stat-content h4 {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-content .stat-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Filters Panel */
+        .filters-panel {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .filter-group input, .filter-group select {
+            padding: 0.7rem 0.85rem;
+            font-size: 0.85rem;
+            border-radius: 10px;
+        }
+
+        /* Search input specific */
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 0.85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .search-wrapper input {
+            padding-left: 2.5rem;
+        }
+
+        /* Badges */
+        .state-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.65rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .state-en_cursada {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+
+        .state-regular {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+        }
+
+        .state-aprobada {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        .state-libre {
+            background: rgba(244, 63, 94, 0.15);
+            border-color: rgba(244, 63, 94, 0.3);
+            color: #f87171;
+        }
+
+        .notes-container {
+            display: flex;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+        }
+
+        .note-badge {
+            padding: 0.15rem 0.45rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+        }
+
+        .note-parcial {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.25);
+            color: #60a5fa;
+        }
+
+        .note-tp {
+            background: rgba(245, 158, 11, 0.12);
+            border-color: rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
+        }
+
+        .note-final {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.25);
+            color: #34d399;
+        }
+
+        .promedio-badge {
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+        }
+
+        .promedio-high {
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .promedio-mid {
+            color: #60a5fa;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .promedio-low {
+            color: #f87171;
+            background: rgba(244, 63, 94, 0.1);
+        }
+
+        .promedio-none {
+            color: var(--text-muted);
+        }
+
+        /* Table custom styling */
+        .alumno-row {
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .alumno-row:hover {
+            background: rgba(255, 255, 255, 0.025) !important;
+        }
+
+        .details-row {
+            background: rgba(15, 23, 42, 0.3) !important;
+            border-left: 3px solid var(--primary);
+        }
+
+        .details-container {
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 1.2fr 1.2fr 1.6fr;
+            gap: 1.5rem;
+            animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .details-col h5 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .details-info-item {
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .details-info-item strong {
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-right: 0.25rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--primary);
+            opacity: 0.5;
+            margin-bottom: 1.25rem;
+            display: block;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Risk Alerts */
+        .risk-indicator {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            border-radius: 50%;
+            color: #f87171;
+            font-size: 1rem;
+            cursor: help;
+        }
+
+        @media (max-width: 1000px) {
+            .filters-panel {
+                grid-template-columns: 1fr 1fr;
+            }
+            .filters-panel .filter-group:first-child {
+                grid-column: span 2;
+            }
+            .details-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .filters-panel {
+                grid-template-columns: 1fr;
+            }
+            .filters-panel .filter-group:first-child {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navegación -->
+        <nav class="nav">
+            <a href="/dashboard-profesor" style="font-weight: 700;">← Panel Profesor</a>
+            <a href="/profile">Mi Perfil</a>
+            <a href="/profesor/materias">Materias</a>
+            <a href="/profesor/alumnos" class="active">Alumnos</a>
+        </nav>
+
+        <!-- Panel Principal -->
+        <div class="glass-panel">
+            <div class="header-flex">
+                <h2><i class='bx bx-group' style="vertical-align: middle; margin-right: 0.5rem; color: var(--primary);"></i> Seguimiento de Alumnos</h2>
+                <span class="badge-rol" style="font-size: 0.85rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.3rem 0.75rem; border-radius: 12px; font-weight: 700;">Legajo: {{legajo_docente}}</span>
+            </div>
+
+            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">
+                Directorio integral y panel de seguimiento pedagógico. Consulte la información académica, estado de cursada y rendimiento de los estudiantes en todas sus cátedras. Haga clic en cualquier fila para expandir los datos de contacto y detalles académicos.
+            </p>
+
+            <!-- Dashboard de Estadísticas Pedagógicas -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class='bx bx-user'></i></div>
+                    <div class="stat-content">
+                        <h4>Alumnos en Vista</h4>
+                        <div class="stat-value" id="statTotal">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class='bx bx-award'></i></div>
+                    <div class="stat-content">
+                        <h4>Promedio General</h4>
+                        <div class="stat-value" id="statPromedio">0.00</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class='bx bx-check-double'></i></div>
+                    <div class="stat-content">
+                        <h4>Tasa de Aprobación</h4>
+                        <div class="stat-value" id="statAprobados">0%</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class='bx bx-error' style="color: #f87171;"></i></div>
+                    <div class="stat-content">
+                        <h4>Alumnos en Riesgo</h4>
+                        <div class="stat-value" id="statRiesgo">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros de Búsqueda Interactiva -->
+            {{#tiene_alumnos}}
+            <div class="filters-panel">
+                <div class="filter-group">
+                    <label for="searchInput">Buscar Alumno</label>
+                    <div class="search-wrapper">
+                        <i class='bx bx-search'></i>
+                        <input type="text" id="searchInput" placeholder="Nombre, apellido o legajo...">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label for="catedraFilter">Cátedra dictada</label>
+                    <select id="catedraFilter">
+                        <option value="">Todas las materias</option>
+                        {{#catedras}}
+                        <option value="{{id_catedra}}">{{materia_nombre}} (Com. {{comision}})</option>
+                        {{/catedras}}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="estadoFilter">Estado Cursada</label>
+                    <select id="estadoFilter">
+                        <option value="">Todos los estados</option>
+                        <option value="EN_CURSADA">En Cursada</option>
+                        <option value="REGULAR">Regular</option>
+                        <option value="APROBADA">Aprobada</option>
+                        <option value="LIBRE">Libre</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="tipoFilter">Tipo de Alumno</label>
+                    <select id="tipoFilter">
+                        <option value="">Todos los tipos</option>
+                        <option value="INGRESANTE">Ingresante</option>
+                        <option value="AVANZADO">Avanzado</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="riesgoFilter">Riesgo Académico</label>
+                    <select id="riesgoFilter">
+                        <option value="">Todos los niveles</option>
+                        <option value="riesgo">En Riesgo</option>
+                        <option value="safe">Sin Riesgo</option>
+                    </select>
+                </div>
+            </div>
+            {{/tiene_alumnos}}
+
+            <!-- Tabla de alumnos -->
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">Legajo</th>
+                            <th style="width: 25%;">Alumno</th>
+                            <th style="width: 20%;">Materia / Cátedra</th>
+                            <th style="width: 15%;">Carrera</th>
+                            <th style="width: 12%;">Estado</th>
+                            <th style="width: 10%;">Promedio</th>
+                            <th style="width: 8%; text-align: center;">Riesgo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alumnosTableBody">
+                        {{#alumnos_inscriptos}}
+                        <!-- Fila Principal del Alumno -->
+                        <tr class="alumno-row" 
+                            data-inscripcion="{{id_inscripcion}}"
+                            data-search="{{legajo}} {{nombre}} {{apellido}}"
+                            data-catedra="{{id_catedra}}"
+                            data-estado="{{estado_inscripcion}}"
+                            data-tipo="{{tipo_alumno}}"
+                            data-promedio-raw="{{promedio_raw}}"
+                            data-riesgo="{{#al_riesgo}}si{{/al_riesgo}}{{^al_riesgo}}no{{/al_riesgo}}"
+                            onclick="toggleDetails('{{id_inscripcion}}')">
+                            
+                            <td><strong>{{legajo}}</strong></td>
+                            <td>
+                                <div style="font-weight: 600; color: var(--text-main);">{{nombre}} {{apellido}}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;">{{tipo_alumno}}</div>
+                            </td>
+                            <td>
+                                <div>{{materia_nombre}}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;">Comisión {{comision}} &bull; Año {{anio}}</div>
+                            </td>
+                            <td>
+                                <div style="font-size: 0.85rem;" title="{{carrera_nombre}}">{{carrera_nombre}}</div>
+                            </td>
+                            <td>
+                                <span class="state-badge state-{{estado_inscripcion}}">{{estado_inscripcion}}</span>
+                            </td>
+                            <td>
+                                {{#tiene_notas}}
+                                <span class="promedio-badge {{#al_riesgo}}promedio-low{{/al_riesgo}}{{^al_riesgo}}promedio-high{{/al_riesgo}}">
+                                    {{promedio}}
+                                </span>
+                                {{/tiene_notas}}
+                                {{^tiene_notas}}
+                                <span class="promedio-badge promedio-none">-</span>
+                                {{/tiene_notas}}
+                            </td>
+                            <td style="text-align: center;">
+                                {{#al_riesgo}}
+                                <span class="risk-indicator" title="Atención: Alumno en situación de riesgo pedagógico (Promedio menor a 4.0 o estado LIBRE)"><i class='bx bx-error-circle'></i></span>
+                                {{/al_riesgo}}
+                                {{^al_riesgo}}
+                                <i class='bx bx-check-circle' style="color: #34d399; font-size: 1.15rem;" title="Situación académica estable"></i>
+                                {{/al_riesgo}}
+                            </td>
+                        </tr>
+
+                        <!-- Fila de Detalles Desplegable -->
+                        <tr id="details-{{id_inscripcion}}" class="details-row" style="display: none;">
+                            <td colspan="7">
+                                <div class="details-container">
+                                    <div class="details-col">
+                                        <h5><i class='bx bx-envelope'></i> Contacto y Legales</h5>
+                                        <div class="details-info-item"><strong>DNI:</strong> {{dni}}</div>
+                                        <div class="details-info-item"><strong>Email:</strong> {{correo}}</div>
+                                        <div class="details-info-item"><strong>Teléfono:</strong> {{telefono}}</div>
+                                    </div>
+                                    <div class="details-col">
+                                        <h5><i class='bx bx-book-open'></i> Plan de Estudios</h5>
+                                        <div class="details-info-item"><strong>Carrera:</strong> {{carrera_nombre}}</div>
+                                        <div class="details-info-item"><strong>Resolución:</strong> {{plan_resolucion}}</div>
+                                        <div class="details-info-item"><strong>Inscripción Cátedra:</strong> #{{id_inscripcion}}</div>
+                                    </div>
+                                    <div class="details-col">
+                                        <h5><i class='bx bx-list-check'></i> Calificaciones Registradas</h5>
+                                        <div class="notes-container">
+                                            {{#notas}}
+                                            <span class="note-badge note-{{tipo_css}}" title="Calificación cargada">
+                                                {{tipo_nota}}: <strong>{{valor}}</strong>
+                                            </span>
+                                            {{/notas}}
+                                            {{^notas}}
+                                            <em style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.25rem;">Sin calificaciones registradas en este período.</em>
+                                            {{/notas}}
+                                        </div>
+                                        <div style="margin-top: 1rem;">
+                                            <a href="/profesor/materias/{{id_catedra}}/notas" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                                <i class='bx bx-edit-alt'></i> Editar Calificaciones
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {{/alumnos_inscriptos}}
+
+                        {{^tiene_alumnos}}
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <i class='bx bx-group'></i>
+                                <h3>No se encontraron alumnos inscriptos</h3>
+                                <p>Actualmente no registra alumnos inscriptos en ninguna de sus cátedras asignadas.</p>
+                            </td>
+                        </tr>
+                        {{/tiene_alumnos}}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Botón de retorno -->
+            <div style="text-align: center; margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <a href="/dashboard-profesor" class="btn btn-secondary">
+                    <i class='bx bx-left-arrow-alt'></i> Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de filtrado interactivo y cálculo dinámico de estadísticas -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos de filtrado
+            const searchInput = document.getElementById('searchInput');
+            const catedraFilter = document.getElementById('catedraFilter');
+            const estadoFilter = document.getElementById('estadoFilter');
+            const tipoFilter = document.getElementById('tipoFilter');
+            const riesgoFilter = document.getElementById('riesgoFilter');
+
+            // Hookear eventos
+            if (searchInput) {
+                searchInput.addEventListener('input', applyFilters);
+            }
+            if (catedraFilter) {
+                catedraFilter.addEventListener('change', applyFilters);
+            }
+            if (estadoFilter) {
+                estadoFilter.addEventListener('change', applyFilters);
+            }
+            if (tipoFilter) {
+                tipoFilter.addEventListener('change', applyFilters);
+            }
+            if (riesgoFilter) {
+                riesgoFilter.addEventListener('change', applyFilters);
+            }
+
+            // Primera inicialización de estadísticas
+            updateStats();
+        });
+
+        // Toggle para expandir fila de detalles
+        function toggleDetails(idInscripcion) {
+            // Evitar cerrar si se hace clic en botones dentro del panel desplegable
+            const detailsRow = document.getElementById('details-' + idInscripcion);
+            if (detailsRow) {
+                if (detailsRow.style.display === 'none') {
+                    detailsRow.style.display = 'table-row';
+                } else {
+                    detailsRow.style.display = 'none';
+                }
+            }
+        }
+
+        // Aplicar filtros dinámicos
+        function applyFilters() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const catedraVal = document.getElementById('catedraFilter').value;
+            const estadoVal = document.getElementById('estadoFilter').value;
+            const tipoVal = document.getElementById('tipoFilter').value;
+            const riesgoVal = document.getElementById('riesgoFilter').value;
+
+            const rows = document.querySelectorAll('.alumno-row');
+            rows.forEach(row => {
+                const searchTxt = row.getAttribute('data-search').toLowerCase();
+                const catedraId = row.getAttribute('data-catedra');
+                const estado = row.getAttribute('data-estado');
+                const tipo = row.getAttribute('data-tipo');
+                const riesgo = row.getAttribute('data-riesgo');
+                const inscripcionId = row.getAttribute('data-inscripcion');
+
+                const matchesSearch = searchTxt.includes(query);
+                const matchesCatedra = !catedraVal || catedraId === catedraVal;
+                const matchesEstado = !estadoVal || estado === estadoVal;
+                const matchesTipo = !tipoVal || tipo === tipoVal;
+                const matchesRiesgo = !riesgoVal || 
+                                     (riesgoVal === 'riesgo' && riesgo === 'si') || 
+                                     (riesgoVal === 'safe' && riesgo === 'no');
+
+                const detailsRow = document.getElementById('details-' + inscripcionId);
+
+                if (matchesSearch && matchesCatedra && matchesEstado && matchesTipo && matchesRiesgo) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                    if (detailsRow) {
+                        detailsRow.style.display = 'none';
+                    }
+                }
+            });
+
+            // Recalcular métricas pedagógicas
+            updateStats();
+        }
+
+        // Recalcular estadísticas dinámicas en base a alumnos visibles
+        function updateStats() {
+            const rows = document.querySelectorAll('.alumno-row');
+            let total = 0;
+            let sumPromedio = 0;
+            let countWithGrades = 0;
+            let aprobados = 0;
+            let enRiesgo = 0;
+
+            rows.forEach(row => {
+                if (row.style.display !== 'none') {
+                    total++;
+                    const promedioRaw = parseFloat(row.getAttribute('data-promedio-raw'));
+                    if (promedioRaw > 0) {
+                        sumPromedio += promedioRaw;
+                        countWithGrades++;
+                    }
+                    const estado = row.getAttribute('data-estado');
+                    if (estado === 'APROBADA') {
+                        aprobados++;
+                    }
+                    const riesgo = row.getAttribute('data-riesgo');
+                    if (riesgo === 'si') {
+                        enRiesgo++;
+                    }
+                }
+            });
+
+            // Renderizar valores en las tarjetas
+            const totalEl = document.getElementById('statTotal');
+            if (totalEl) totalEl.innerText = total;
+
+            const promedioEl = document.getElementById('statPromedio');
+            if (promedioEl) {
+                promedioEl.innerText = countWithGrades > 0 ? (sumPromedio / countWithGrades).toFixed(2) : '0.00';
+            }
+
+            const aprobadosEl = document.getElementById('statAprobados');
+            if (aprobadosEl) {
+                aprobadosEl.innerText = total > 0 ? Math.round((aprobados / total) * 100) + '%' : '0%';
+            }
+
+            const riesgoEl = document.getElementById('statRiesgo');
+            if (riesgoEl) {
+                riesgoEl.innerText = enRiesgo;
+                if (enRiesgo > 0) {
+                    riesgoEl.style.color = '#f87171'; // Resaltar en rojo si hay riesgo
+                } else {
+                    riesgoEl.style.color = 'var(--text-main)';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
