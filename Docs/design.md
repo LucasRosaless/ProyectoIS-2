@@ -19,7 +19,7 @@ El sistema sigue un patrón de **Arquitectura en Capas (Layered Architecture)** 
 A continuación se presenta el modelo de dominio detallado, representando las entidades principales y sus relaciones dentro del sistema académico.
 
 <p align="center">
-  <img src="./img/diagrama-clases.svg" alt="Diagrama de Clases UML" width="85%">
+  <img src="./img/diagrama_UML_isii_w.drawio - copia.svg" alt="Diagrama de Clases UML" width="85%">
 </p>
 
 ---
